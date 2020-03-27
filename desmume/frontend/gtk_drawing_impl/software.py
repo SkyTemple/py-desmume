@@ -24,11 +24,15 @@ from desmume.frontend.gtk_drawing_area_desmume import AbstractRenderer
 
 
 class SoftwareRenderer(AbstractRenderer):
+
     def __init__(self, emu: DeSmuME):
         super().__init__(emu)
         self._upper_image = None
         self._lower_image = None
         self.decode_screen()
+
+    def init(self):
+        pass
 
     def screen(self, base_w, base_h, ctx: cairo.Context, display_id: int):
         if display_id == 0:

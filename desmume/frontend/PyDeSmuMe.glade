@@ -369,6 +369,15 @@
                                 <accelerator key="F10" signal="activate" modifiers="GDK_SHIFT_MASK"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="savestate_file">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">To File...</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="on_savestate_file_activate" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -482,17 +491,74 @@
                                 <accelerator key="F10" signal="activate"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="loadstate_file">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">From File...</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="on_loadstate_file_activate" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_movie_record">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Record movie to...</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_menu_movie_record_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_movie_play">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Play movie from...</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_menu_movie_play_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_movie_stop">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Stop movie</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="on_menu_movie_stop_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="menu_pscreen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">_PrintScreen</property>
+                        <property name="label" translatable="yes">Take a screenshot</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_menu_pscreen_activate" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
@@ -1919,6 +1985,15 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkButton" id="button_Left">
                 <property name="label" translatable="yes">Left : </property>
                 <property name="visible">True</property>
@@ -2138,6 +2213,9 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkButton" id="button_R">
                 <property name="label" translatable="yes">R : </property>
                 <property name="visible">True</property>
@@ -2154,6 +2232,12 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"/>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -2246,6 +2330,9 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkButton" id="button_Start">
                 <property name="label" translatable="yes">Start : </property>
                 <property name="visible">True</property>
@@ -2288,6 +2375,9 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkButton" id="button_Boost">
                 <property name="label" translatable="yes">Boost : </property>
                 <property name="visible">True</property>
@@ -2304,6 +2394,9 @@ DeSmuME Authors https://github.com/TASVideos/desmume/blob/master/desmume/AUTHORS
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"/>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>

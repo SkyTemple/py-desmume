@@ -18,7 +18,7 @@ import cairo
 import gi
 
 from desmume.controls import Keys, keymask, load_default_config, key_names, load_configured_config
-from desmume.emulator import DeSmuME, NB_STATES, SCREEN_WIDTH, SCREEN_HEIGHT
+from desmume.emulator import DeSmuME, NB_STATES, SCREEN_WIDTH, SCREEN_HEIGHT, StartFrom, DeSmuME_Date
 from desmume.frontend.gtk_drawing_area_desmume import AbstractRenderer
 from desmume.frontend.widget_to_primitive import widget_to_primitive
 
@@ -36,7 +36,9 @@ class MainController:
         self.builder = builder
         self.window = window
         self.emu = emu
+
         self.renderer = AbstractRenderer.impl(emu)
+        self.renderer.init()
 
         self._keyboard_cfg, self._joystick_cfg = load_configured_config(emu)
         self._keyboard_tmp = self._keyboard_cfg
@@ -63,12 +65,35 @@ class MainController:
         self._supress_event = False
         self._tmp_key = None
 
+        self._filter_nds = Gtk.FileFilter()
+        self._filter_nds.set_name("Nintendo DS ROMs (*.nds)")
+        self._filter_nds.add_pattern("*.nds")
+
+        self._filter_gba_ds = Gtk.FileFilter()
+        self._filter_gba_ds.set_name("Nintendo DS ROMs with binary loader (*.ds.gba)")
+        self._filter_gba_ds.add_pattern("*.nds")
+
+        self._filter_any = Gtk.FileFilter()
+        self._filter_any.set_name("All files")
+        self._filter_any.add_pattern("*")
+
+        self._filter_ds = Gtk.FileFilter()
+        self._filter_ds.set_name("DeSmuME binary (*.ds)")
+        self._filter_ds.add_pattern("*.ds")
+
+        self._filter_dsm = Gtk.FileFilter()
+        self._filter_dsm.set_name("DeSmuME move file (*.dsm)")
+        self._filter_dsm.add_pattern("*.dsm")
+
         self._main_draw = builder.get_object("wDraw_Main")
         self._main_draw.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self._main_draw.show()
         self._sub_draw = builder.get_object("wDraw_Sub")
         self._sub_draw.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self._sub_draw.show()
+
+        w_status: Gtk.Statusbar = self.builder.get_object("wStatus")
+        self._movie_statusbar_context = w_status.get_context_id("Movie")
 
         builder.connect_signals(self)
 
@@ -201,31 +226,7 @@ class MainController:
     def on_menu_open_activate(self, *args):
         self.emu.pause()
 
-        dialog = Gtk.FileChooserDialog(
-            "Open...",
-            self.window,
-            Gtk.FileChooserAction.OPEN,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
-        )
-
-        filter_nds = Gtk.FileFilter()
-        filter_nds.set_name("Nintendo DS ROMs (*.nds)")
-        filter_nds.add_pattern("*.nds")
-        dialog.add_filter(filter_nds)
-
-        filter_gba_ds = Gtk.FileFilter()
-        filter_gba_ds.set_name("Nintendo DS ROMs with binary loader (*.ds.gba)")
-        filter_gba_ds.add_pattern("*.nds")
-        dialog.add_filter(filter_gba_ds)
-
-        filter_any = Gtk.FileFilter()
-        filter_any.set_name("All files")
-        filter_any.add_pattern("*")
-        dialog.add_filter(filter_any)
-
-        response = dialog.run()
-        fn = dialog.get_filename()
-        dialog.destroy()
+        response, fn = self._file_chooser(Gtk.FileChooserAction.OPEN, "Open...", (self._filter_nds, self._filter_gba_ds, self._filter_any))
 
         if response == Gtk.ResponseType.OK:
             try:
@@ -247,21 +248,11 @@ class MainController:
         if was_running:
             self.emu.pause()
 
-        dialog = Gtk.FileChooserDialog(
-            "Save Screenshot...",
-            self.window,
-            Gtk.FileChooserAction.SAVE,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
-        )
-
         filter_png = Gtk.FileFilter()
         filter_png.set_name("PNG Image (*.png)")
         filter_png.add_pattern("*.png")
-        dialog.add_filter(filter_png)
 
-        response = dialog.run()
-        fn = dialog.get_filename()
-        dialog.destroy()
+        response, fn = self._file_chooser(Gtk.FileChooserAction.SAVE, "Save Screenshot...", (filter_png, self._filter_any))
 
         if response == Gtk.ResponseType.OK:
             self.emu.screenshot().save(fn)
@@ -283,9 +274,90 @@ class MainController:
         self.update_savestate_menu("loadstate", slot)
         self.update_savestate_menu("savestate", slot)
 
+    def on_loadstate_file_activate(self, *args):
+        self.emu.pause()
+
+        response, fn = self._file_chooser(Gtk.FileChooserAction.OPEN, "Load savestate...", (self._filter_ds, self._filter_any))
+
+        if response == Gtk.ResponseType.OK:
+            try:
+                self.emu.savestate.load_file(fn)
+            except RuntimeError as err:
+                md = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR,
+                                       Gtk.ButtonsType.OK, str(err),
+                                       title="Error!")
+                md.set_position(Gtk.WindowPosition.CENTER)
+                md.run()
+                md.destroy()
+            self.resume()
+
+    def on_savestate_file_activate(self, *args):
+        self.emu.pause()
+
+        response, fn = self._file_chooser(Gtk.FileChooserAction.SAVE, "Save savestate...",  (self._filter_ds, self._filter_any))
+
+        if response == Gtk.ResponseType.OK:
+            try:
+                self.emu.savestate.save_file(fn)
+            except RuntimeError as err:
+                md = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR,
+                                       Gtk.ButtonsType.OK, str(err),
+                                       title="Error!")
+                md.set_position(Gtk.WindowPosition.CENTER)
+                md.run()
+                md.destroy()
+            self.resume()
+
     def on_savetypeXX_toggled(self, w: Gtk.Widget, *args):
         type = widget_to_primitive(w)
         self.emu.set_savetype(type)
+
+    # MOVIE
+
+    def on_menu_movie_play_activate(self, *args):
+        self.emu.pause()
+
+        response, fn = self._file_chooser(Gtk.FileChooserAction.OPEN, "Choose movie...", (self._filter_dsm, self._filter_any))
+
+        if response == Gtk.ResponseType.OK:
+            try:
+                self.emu.movie.play(fn)
+                self.push_statusbar_text(self._movie_statusbar_context, f"Playing movie: {fn}...")
+            except RuntimeError as err:
+                md = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR,
+                                       Gtk.ButtonsType.OK, str(err),
+                                       title="Error!")
+                md.set_position(Gtk.WindowPosition.CENTER)
+                md.run()
+                md.destroy()
+            self.resume()
+
+    def on_menu_movie_record_activate(self, *args):
+        self.emu.pause()
+
+        response, fn = self._file_chooser(Gtk.FileChooserAction.SAVE, "Save movie as...",  (self._filter_dsm, self._filter_any))
+
+        if response == Gtk.ResponseType.OK:
+            try:
+                self.emu.movie.record(fn, "")
+                self.push_statusbar_text(self._movie_statusbar_context, f"Recording movie: {fn}...")
+            except RuntimeError as err:
+                md = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT, Gtk.MessageType.ERROR,
+                                       Gtk.ButtonsType.OK, str(err),
+                                       title="Error!")
+                md.set_position(Gtk.WindowPosition.CENTER)
+                md.run()
+                md.destroy()
+            self.resume()
+
+    def on_menu_movie_stop_activate(self, *args):
+        self.emu.movie.stop()
+        # TODO: We don't actually pop it when doing anything but pressing this button...
+        self.pop_statusbar_text(self._movie_statusbar_context)
 
     # MENU EMULATION
     def on_menu_exec_activate(self, menu_item: Gtk.MenuItem, *args):
@@ -502,6 +574,9 @@ class MainController:
         self._set_sensitve("menu_reset", True)
         self._set_sensitve("wgt_Exec", True)
         self._set_sensitve("wgt_Reset", True)
+        self._set_sensitve("menu_movie_play", True)
+        self._set_sensitve("menu_movie_record", True)
+        self._set_sensitve("menu_movie_stop", True)
 
     def update_savestates_menu(self):
         for i in range(1, NB_STATES + 1):
@@ -615,6 +690,33 @@ class MainController:
         spacer1.set_size_request(dim1, -1)
         spacer2.set_size_request(-1, dim2)
         self.window.resize(1, 1)
+
+    def _file_chooser(self, type, name, filter):
+        btn = Gtk.STOCK_OPEN
+        if type == Gtk.FileChooserAction.SAVE:
+            btn = Gtk.STOCK_SAVE
+        dialog = Gtk.FileChooserDialog(
+            name,
+            self.window,
+            type,
+            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, btn, Gtk.ResponseType.OK)
+        )
+        for f in filter:
+            dialog.add_filter(f)
+
+        response = dialog.run()
+        fn = dialog.get_filename()
+        dialog.destroy()
+
+        return response, fn
+
+    def push_statusbar_text(self, context, text):
+        w_status: Gtk.Statusbar = self.builder.get_object("wStatus")
+        w_status.push(context, text)
+
+    def pop_statusbar_text(self, context):
+        w_status: Gtk.Statusbar = self.builder.get_object("wStatus")
+        w_status.pop(context)
 
 
 def gtk_table_reattach(

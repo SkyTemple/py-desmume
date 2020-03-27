@@ -108,3 +108,6 @@ venv.bak/
 .idea/
 ### skytemple
 dbg_output
+
+# Glade
+*.glade~

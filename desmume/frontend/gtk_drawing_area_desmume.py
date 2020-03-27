@@ -47,6 +47,10 @@ class AbstractRenderer(ABC):
             return SoftwareRenderer(emu)
 
     @abstractmethod
+    def init(self):
+        pass
+
+    @abstractmethod
     def screen(self, base_w, base_h, ctx: cairo.Context, display_id: int):
         pass
 

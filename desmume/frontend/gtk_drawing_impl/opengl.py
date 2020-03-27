@@ -14,8 +14,18 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
+import cairo
+from gi.repository import Gtk
+
 from desmume.frontend.gtk_drawing_area_desmume import AbstractRenderer
 
 
 class OpenGLRenderer(AbstractRenderer):
-    pass
+    def init(self):
+        pass  # todo
+
+    def screen(self, base_w, base_h, ctx: cairo.Context, display_id: int):
+        pass  # todo
+
+    def reshape(self, draw: Gtk.DrawingArea, display_id: int):
+        pass  # todo

@@ -17,7 +17,7 @@
 
 import os
 import platform
-from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c_char, c_uint16, c_uint8
+from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c_char, c_uint16, c_uint8, Structure
 from enum import Enum
 from time import sleep
 
@@ -45,6 +45,12 @@ class Language(Enum):
     GERMAN = 3
     ITALIAN = 4
     SPANISH = 5
+
+
+class StartFrom(Enum):
+    START_BLANK = 0
+    START_SRAM = 1
+    START_SAVESTATE = 2
 
 
 class DeSmuME_SDL_Window:
@@ -146,10 +152,99 @@ class DeSmuME_Savestate:
     def save(self, slot_id: int):
         return self.emu.lib.desmume_savestate_slot_save(slot_id)
 
+    def load_file(self, file_name: str):
+        if not self.emu.lib.desmume_savestate_load(c_char_p(strbytes(file_name))):
+            raise RuntimeError("Unable to load savesate.")
+
+    def save_file(self, file_name: str):
+        if not self.emu.lib.desmume_savestate_save(c_char_p(strbytes(file_name))):
+            raise RuntimeError("Unable to save savesate.")
+
     def date(self, slot_id: int):
         self.emu.lib.desmume_savestate_slot_date.restype = c_char_p
         return str(self.emu.lib.desmume_savestate_slot_date(slot_id), 'utf-8')
 
+
+class DeSmuME_Date(Structure):
+    _fields_ = [
+        ("year", c_int),
+        ("month", c_int),
+        ("day", c_int),
+        ("hour", c_int),
+        ("minute", c_int),
+        ("second", c_int),
+        ("millisecond", c_int),
+    ]
+
+
+class DeSmuME_Movie:
+    def __init__(self, emu: 'DeSmuME'):
+        self.emu = emu
+
+    def play(self, file_name: str):
+        self.emu.lib.desmume_movie_play.restype = c_char_p
+        err = self.emu.lib.desmume_movie_play(c_char_p(strbytes(file_name)))
+        if err is not None and err != "":
+            raise RuntimeError(str(err, 'utf-8'))
+
+    def record(
+            self, file_name: str, author_name: str,
+            start_from: StartFrom = StartFrom.START_BLANK, sram_save: str = "", rtc_date: DeSmuME_Date = None
+    ):
+        if not rtc_date:
+            self.emu.lib.desmume_movie_record(
+                c_char_p(strbytes(file_name)), c_char_p(strbytes(author_name)), start_from.value, c_char_p(strbytes(sram_save))
+            )
+        else:
+            self.emu.lib.desmume_movie_record_from_date(
+                c_char_p(strbytes(file_name)), c_char_p(strbytes(author_name)), start_from.value, c_char_p(strbytes(sram_save)), rtc_date
+            )
+
+    def stop(self):
+        self.emu.lib.desmume_movie_stop()
+
+    def is_active(self):
+        return bool(self.emu.lib.desmume_movie_is_active())
+
+    def is_recording(self):
+        return bool(self.emu.lib.desmume_movie_is_recording())
+
+    def is_playing(self):
+        return bool(self.emu.lib.desmume_movie_is_playing())
+
+    def is_finished(self):
+        return bool(self.emu.lib.desmume_movie_is_finished())
+
+    def get_length(self):
+        if self.is_active():
+            return self.emu.lib.desmume_movie_get_length()
+        raise ValueError("No movie is active.")
+
+    def get_name(self):
+        if self.is_active():
+            self.emu.lib.desmume_movie_get_name.restype = c_char_p
+            return self.emu.lib.desmume_movie_get_name()
+        raise ValueError("No movie is active.")
+
+    def get_rerecord_count(self):
+        if self.is_active():
+            return self.emu.lib.desmume_movie_get_rerecord_count()
+        raise ValueError("No movie is active.")
+
+    def set_rerecord_count(self, count: int):
+        if self.is_active():
+            return self.emu.lib.desmume_movie_set_rerecord_count(count)
+        raise ValueError("No movie is active.")
+
+    def get_readonly(self):
+        if self.is_active():
+            return bool(self.emu.lib.desmume_movie_get_readonly())
+        raise ValueError("No movie is active.")
+
+    def set_readonly(self, state: bool):
+        if self.is_active():
+            return self.emu.lib.desmume_movie_set_readonly(state)
+        raise ValueError("No movie is active.")
 
 class DeSmuME:
     def __init__(self, dl_name: str = None):
@@ -180,6 +275,7 @@ class DeSmuME:
 
         self._input = DeSmuME_Input(self)
         self._savestate = DeSmuME_Savestate(self)
+        self._movie = DeSmuME_Movie(self)
         self._sdl_window = None
         self._raw_buffer_rgbx = None
 
@@ -188,6 +284,7 @@ class DeSmuME:
             self.lib.desmume_free()
             del self._input
             del self._savestate
+            del self._movie
             del self._sdl_window
             self.lib = None
 
@@ -201,6 +298,10 @@ class DeSmuME:
     @property
     def savestate(self):
         return self._savestate
+
+    @property
+    def movie(self):
+        return self._movie
 
     def set_language(self, lang: Language):
         self.lib.desmume_set_language(lang.value)
@@ -287,14 +388,77 @@ class DeSmuME:
 
 
 # Testing script
+
+def _print_movie_stats(emu: 'DeSmuME'):
+    print("--------------------")
+    print(f"Active:    {emu.movie.is_active()}")
+    print(f"Playing:   {emu.movie.is_playing()}")
+    print(f"Recording: {emu.movie.is_recording()}")
+    print(f"Finished:  {emu.movie.is_finished()}")
+    if emu.movie.is_active():
+        print(f"Length:    {emu.movie.get_length()}")
+        print(f"Name:      {emu.movie.get_name()}")
+        print(f"Readonly:  {emu.movie.get_readonly()}")
+        print(f"RRcount:   {emu.movie.get_rerecord_count()}")
+
 if __name__ == '__main__':
     # TODO: Figure out how to specify this correctly.
     emu = DeSmuME("../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
     #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-Debug.dll")
 
+    emu.set_language(Language.GERMAN)
     emu.open("../../skyworkcopy.nds")
     #emu.open("..\\skyworkcopy.nds")
     win = emu.create_sdl_window(use_opengl_if_possible=True)
+
+    print("> BEFORE")
+    _print_movie_stats(emu)
+
+    for i in range(0, 200):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    print("> BEFORE2")
+    _print_movie_stats(emu)
+    emu.movie.record('/tmp/test.dsm', 'test', StartFrom.START_BLANK, "", DeSmuME_Date(2009, 12, 12, 10, 11, 12, 200))
+
+    for i in range(0, 500):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    emu.movie.set_rerecord_count(100)
+    print("> RECORD")
+    _print_movie_stats(emu)
+
+    emu.movie.stop()
+
+    for i in range(0, 500):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    print("> STOP")
+    _print_movie_stats(emu)
+
+    emu.movie.play('/tmp/test.dsm')
+
+    for i in range(0, 300):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    print("> PLAY")
+    _print_movie_stats(emu)
+
+    for i in range(0, 300):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    print("> PLAY END")
+    _print_movie_stats(emu)
 
     while not win.has_quit():
         win.process_input()
@@ -302,4 +466,3 @@ if __name__ == '__main__':
         win.draw()
 
     #emu.screenshot().show()
-
