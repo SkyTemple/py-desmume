@@ -1,3 +1,7 @@
+"""
+Software based rendering implementation (using Cairo). Can also be used directly,
+it has a hooking mechanism for drawing custom overlays.
+"""
 #  Copyright 2020 Marco Köpcke (Parakoopa)
 #
 #  This file is part of py-desmume.
@@ -15,6 +19,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
 from math import radians
+from typing import Callable
 
 import cairo
 from gi.repository import Gtk, Gdk
@@ -25,10 +30,12 @@ from desmume.frontend.gtk_drawing_area_desmume import AbstractRenderer
 
 class SoftwareRenderer(AbstractRenderer):
 
-    def __init__(self, emu: DeSmuME):
+    def __init__(self, emu: DeSmuME, after_render_hook: Callable[[cairo.Context, int], None] = None):
+        """The after rendering hook takes the ctx and display_id as params."""
         super().__init__(emu)
         self._upper_image = None
         self._lower_image = None
+        self._after_render_hook = after_render_hook
         self.decode_screen()
 
     def init(self):
@@ -51,6 +58,9 @@ class SoftwareRenderer(AbstractRenderer):
             ctx.set_source_surface(self._lower_image)
         ctx.get_source().set_filter(cairo.Filter.NEAREST)
         ctx.paint()
+
+        if self._after_render_hook:
+            self._after_render_hook(ctx, display_id)
 
     def reshape(self, draw: Gtk.DrawingArea, display_id: int):
         pass
