@@ -17,9 +17,10 @@
 
 import os
 import platform
-from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c_char, c_uint16, c_uint8, Structure
+from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c_char, c_uint16, c_uint8, Structure, \
+    c_uint, CFUNCTYPE, c_int8, c_int16, c_uint32, c_int32
 from enum import Enum
-from time import sleep
+from typing import Union, Callable, List, Optional
 
 from PIL import Image
 
@@ -32,6 +33,9 @@ SCREEN_HEIGHT_BOTH = SCREEN_HEIGHT * 2
 SCREEN_PIXEL_SIZE = SCREEN_WIDTH * SCREEN_HEIGHT
 SCREEN_PIXEL_SIZE_BOTH = SCREEN_WIDTH * SCREEN_HEIGHT_BOTH
 NB_STATES = 10
+
+MEMORY_CB_FN = CFUNCTYPE(None, c_uint, c_int)
+MemoryCbFn = Callable[[int, int], None]
 
 
 def strbytes(s):
@@ -55,28 +59,29 @@ class StartFrom(Enum):
 
 class DeSmuME_SDL_Window:
     def __init__(self, emu: 'DeSmuME', auto_pause=True, use_opengl_if_possible=True):
-        self.emu = emu
-        self.emu.lib.desmume_draw_window_init(bool(auto_pause), bool(use_opengl_if_possible))
+        self.lib = emu.lib
+        self.lib.desmume_draw_window_init(bool(auto_pause), bool(use_opengl_if_possible))
 
     def __del__(self):
         self.destroy()
 
     def destroy(self):
-        self.emu.lib.desmume_draw_window_free()
+        self.lib.desmume_draw_window_free()
 
     def draw(self):
-        self.emu.lib.desmume_draw_window_frame()
+        self.lib.desmume_draw_window_frame()
 
     def process_input(self):
-        self.emu.lib.desmume_draw_window_input()
+        self.lib.desmume_draw_window_input()
 
     def has_quit(self) -> bool:
-        return bool(self.emu.lib.desmume_draw_window_has_quit())
+        return bool(self.lib.desmume_draw_window_has_quit())
 
 
 class DeSmuME_Input:
     def __init__(self, emu: 'DeSmuME'):
         self.emu = emu
+        self.lib = emu.lib
         self.has_joy = False
 
     def __del__(self):
@@ -90,7 +95,7 @@ class DeSmuME_Input:
 
     def joy_uninit(self):
         if self.has_joy:
-            self.emu.lib.desmume_input_joy_uninit()
+            self.lib.desmume_input_joy_uninit()
 
     def joy_number_connected(self) -> int:
         if self.has_joy:
@@ -246,6 +251,450 @@ class DeSmuME_Movie:
             return self.emu.lib.desmume_movie_set_readonly(state)
         raise ValueError("No movie is active.")
 
+
+class MemoryAccessor:
+    def __init__(self, signed, mem: 'DeSmuME_Memory'):
+        self.signed = signed
+        self.mem = mem
+
+    def __getitem__(self, key: Union[int, slice]) -> Union[int, bytes, List[int]]:
+        if isinstance(key, int):
+            return self.mem.read(key, key, 1, self.signed)
+        return self.mem.read(key.start, key.stop, key.step, self.signed)
+
+    def __setitem__(self, key: Union[int, slice], value: Union[int, bytes, List[int]]):
+        if isinstance(key, int):
+            return self.mem.write(key, key, 1, bytes([value]))
+        return self.mem.write(key.start, key.stop, key.step, value)
+
+    def read_byte(self, addr: int):
+        return self[addr]
+
+    def read_short(self, addr: int):
+        return self[addr:addr:2]
+
+    def read_long(self, addr: int):
+        return self[addr:addr:4]
+
+
+class RegisterAccesor:
+    def __init__(self, prefix, mem: 'DeSmuME_Memory'):
+        self.prefix = prefix
+        self.lib = mem.emu.lib
+
+    # <editor-fold desc="register accessors" defaultstate="collapsed">
+
+    def __getitem__(self, item):
+        if item == 0:
+            return self.r0
+        if item == 1:
+            return self.r1
+        if item == 2:
+            return self.r2
+        if item == 3:
+            return self.r3
+        if item == 4:
+            return self.r4
+        if item == 5:
+            return self.r5
+        if item == 6:
+            return self.r6
+        if item == 7:
+            return self.r7
+        if item == 8:
+            return self.r8
+        if item == 9:
+            return self.r9
+        if item == 10:
+            return self.r10
+        if item == 11:
+            return self.r11
+        if item == 12:
+            return self.r12
+        if item == 13:
+            return self.r13
+        if item == 14:
+            return self.r14
+        if item == 15:
+            return self.r15
+        raise ValueError("Invalid register")
+
+    def __setitem__(self, item, value):
+        if item == 0:
+            return self.r0 == value
+        if item == 1:
+            return self.r1 == value
+        if item == 2:
+            return self.r2 == value
+        if item == 3:
+            return self.r3 == value
+        if item == 4:
+            return self.r4 == value
+        if item == 5:
+            return self.r5 == value
+        if item == 6:
+            return self.r6 == value
+        if item == 7:
+            return self.r7 == value
+        if item == 8:
+            return self.r8 == value
+        if item == 9:
+            return self.r9 == value
+        if item == 10:
+            return self.r10 == value
+        if item == 11:
+            return self.r11 == value
+        if item == 12:
+            return self.r12 == value
+        if item == 13:
+            return self.r13 == value
+        if item == 14:
+            return self.r14 == value
+        if item == 15:
+            return self.r15 == value
+        raise ValueError("Invalid register")
+
+    @property
+    def r0(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r0")))
+
+    @r0.setter
+    def r0(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r0")), value)
+
+    @property
+    def r1(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r1")))
+
+    @r1.setter
+    def r1(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r1")), value)
+
+    @property
+    def r2(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r2")))
+
+    @r2.setter
+    def r2(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r2")), value)
+
+    @property
+    def r3(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r3")))
+
+    @r3.setter
+    def r3(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r3")), value)
+
+    @property
+    def r4(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r4")))
+
+    @r4.setter
+    def r4(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r4")), value)
+
+    @property
+    def r5(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r5")))
+
+    @r5.setter
+    def r5(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r5")), value)
+
+    @property
+    def r6(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r6")))
+
+    @r6.setter
+    def r6(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r6")), value)
+
+    @property
+    def r7(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r7")))
+
+    @r7.setter
+    def r7(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r7")), value)
+
+    @property
+    def r8(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r8")))
+
+    @r8.setter
+    def r8(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r8")), value)
+
+    @property
+    def r9(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r9")))
+
+    @r9.setter
+    def r9(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r9")), value)
+
+    @property
+    def r10(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r10")))
+
+    @r10.setter
+    def r10(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r10")), value)
+
+    @property
+    def r11(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r11")))
+
+    @r11.setter
+    def r11(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r11")), value)
+
+    @property
+    def r12(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r12")))
+
+    @r12.setter
+    def r12(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r12")), value)
+
+    @property
+    def r13(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r13")))
+
+    @r13.setter
+    def r13(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r13")), value)
+
+    @property
+    def r14(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r14")))
+
+    @r14.setter
+    def r14(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r14")), value)
+
+    @property
+    def r15(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "r15")))
+
+    @r15.setter
+    def r15(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "r15")), value)
+
+    @property
+    def cpsr(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "cpsr")))
+
+    @cpsr.setter
+    def cpsr(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "cpsr")), value)
+
+    @property
+    def spsr(self):
+        return self.lib.desmume_memory_read_register(c_char_p(strbytes(self.prefix + "spsr")))
+
+    @spsr.setter
+    def spsr(self, value):
+        self.lib.desmume_memory_write_register(c_char_p(strbytes(self.prefix + "spsr")), value)
+
+    # Aliases
+    @property
+    def sp(self):
+        return self.r13
+
+    @sp.setter
+    def sp(self, value):
+        self.r13 = value
+
+    @property
+    def lr(self):
+        return self.r14
+
+    @lr.setter
+    def lr(self, value):
+        self.r14 = value
+
+    @property
+    def pc(self):
+        return self.r15
+
+    @pc.setter
+    def pc(self, value):
+        self.r15 = value
+
+    # </editor-fold>
+
+
+class DeSmuME_Memory:
+    def __init__(self, emu: 'DeSmuME'):
+        self.emu = emu
+        self._unsigned = MemoryAccessor(False, self)
+        self._signed = MemoryAccessor(True, self)
+        self._register_arm9 = RegisterAccesor("arm9.", self)
+        self._register_arm7 = RegisterAccesor("arm7.", self)
+
+        self.emu.lib.desmume_memory_read_byte.restype = c_uint8
+        self.emu.lib.desmume_memory_read_byte_signed.restype = c_int8
+        self.emu.lib.desmume_memory_read_short.restype = c_uint16
+        self.emu.lib.desmume_memory_read_short_signed.restype = c_int16
+        self.emu.lib.desmume_memory_read_long.restype = c_uint32
+        self.emu.lib.desmume_memory_read_long_signed.restype = c_int32
+
+        self.emu.lib.desmume_memory_write_byte.argtypes = [c_int, c_uint8]
+        self.emu.lib.desmume_memory_write_short.argtypes = [c_int, c_uint16]
+        self.emu.lib.desmume_memory_write_long.argtypes = [c_int, c_uint32]
+
+        self.emu.lib.desmume_memory_read_register.argtypes = [c_char_p]
+        self.emu.lib.desmume_memory_write_register.argtypes = [c_char_p, c_int]
+
+        # Used to make sure that callbacks aren't GCed.
+        # TODO: Some way to clean this up again.
+        self._registered_cbs = []
+
+    @property
+    def unsigned(self):
+        return self._unsigned
+
+    @property
+    def signed(self):
+        return self._signed
+
+    @property
+    def register_arm9(self):
+        return self._register_arm9
+
+    @property
+    def register_arm7(self):
+        return self._register_arm7
+
+    def read(self, start: int, end: int, size: int, signed: bool) -> Union[int, bytes, List[int]]:
+        """
+        Read part of NDS memory.
+
+        Allowed sizes: 1 = byte, 2 = short, 4 = long
+
+        If start and end are equal, returns an integer based on the size and the signed flag.
+
+        If not, but size is 1 and signed is False, returns a bytes object with all bytes between start and end.
+        Otherwise returns a list of ints based on size and signed.
+        """
+        if size is None:
+            size = 1
+        if start == end:
+            # Read a single value, what kind depends on size
+            if signed:
+                if size == 1:
+                    return self.emu.lib.desmume_memory_read_byte_signed(start)
+                elif size == 2:
+                    return self.emu.lib.desmume_memory_read_short_signed(start)
+                elif size == 4:
+                    return self.emu.lib.desmume_memory_read_long_signed(start)
+            else:
+                if size == 1:
+                    return self.emu.lib.desmume_memory_read_byte(start)
+                elif size == 2:
+                    return self.emu.lib.desmume_memory_read_short(start)
+                elif size == 4:
+                    return self.emu.lib.desmume_memory_read_long(start)
+            raise ValueError("Invalid size.")
+        # Read a range.
+        if signed:
+            if size == 1:
+                b = []
+                for i, addr in enumerate(range(start, end, size)):
+                    b.append(self.emu.lib.desmume_memory_read_byte_signed(addr))
+            elif size == 2:
+                b = []
+                for i, addr in enumerate(range(start, end, size)):
+                    b.append(self.emu.lib.desmume_memory_read_short_signed(addr))
+            elif size == 4:
+                b = []
+                for i, addr in enumerate(range(start, end, size)):
+                    b.append(self.emu.lib.desmume_memory_read_long_signed(addr))
+            else:
+                raise ValueError("Invalid size.")
+        else:
+            if size == 1:
+                b = bytearray(int(end - start))
+                for i, addr in enumerate(range(start, end, size)):
+                    b[i] = self.emu.lib.desmume_memory_read_byte(addr)
+                b = bytes(b)
+            elif size == 2:
+                b = []
+                for i, addr in enumerate(range(start, end, size)):
+                    b.append(self.emu.lib.desmume_memory_read_short(addr))
+            elif size == 4:
+                b = []
+                for i, addr in enumerate(range(start, end, size)):
+                    b.append(self.emu.lib.desmume_memory_read_long(addr))
+            else:
+                raise ValueError("Invalid size.")
+        return b
+
+    def write(self, start: int, end: int, size: int, value: Union[bytes, List[int]]):
+        if start == end:
+            end += 1  # Write at least one.
+        if size == 1:
+            for i, addr in enumerate(range(start, end, size)):
+                self.emu.lib.desmume_memory_write_byte(addr, c_uint8(value[i]))
+        elif size == 2:
+            for i, addr in enumerate(range(start, end, size)):
+                # value must be List[int]
+                self.emu.lib.desmume_memory_write_short(addr, c_uint16(value[i]))
+        elif size == 4:
+            for i, addr in enumerate(range(start, end, size)):
+                # value must be List[int]
+                self.emu.lib.desmume_memory_write_long(addr, c_uint32(value[i]))
+        else:
+            raise ValueError("Invalid size.")
+
+    def read_string(self, address: int, codec='windows-1255'):
+        """Read a string, beginning at address"""
+        max_len = 50
+        string_buff = bytearray(max_len)
+        cur_byte = self.unsigned.read_byte(address)
+        i = 0
+        while cur_byte != 0:
+            if i >= max_len:
+                max_len += 50
+                string_buff += bytearray(50)
+            string_buff[i] = cur_byte
+            i += 1
+            cur_byte = self.unsigned.read_byte(address + i)
+        return str(memoryview(string_buff)[:i], codec, 'ignore')
+
+    def write_byte(self, addr: int, value: int):
+        self.write(addr, addr, 1, [value])
+
+    def write_short(self, addr: int, value: int):
+        self.write(addr, addr, 2, [value])
+
+    def write_long(self, addr: int, value: int):
+        self.write(addr, addr, 4, [value])
+
+    def register_write(self, address: int, callback: Optional[MemoryCbFn], size=1):
+        casted_cbfn = callback
+        if callback is not None:
+            casted_cbfn = MEMORY_CB_FN(callback)
+            self._registered_cbs.append(casted_cbfn)
+        self.emu.lib.desmume_memory_register_write(address, size, casted_cbfn)
+
+    def register_read(self, address: int, callback: Optional[MemoryCbFn], size=1):
+        casted_cbfn = callback
+        if callback is not None:
+            casted_cbfn = MEMORY_CB_FN(callback)
+            self._registered_cbs.append(casted_cbfn)
+        self.emu.lib.desmume_memory_register_read(address, size, casted_cbfn)
+
+    def register_exec(self, address: int, callback: Optional[MemoryCbFn], size=2):
+        casted_cbfn = callback
+        if callback is not None:
+            casted_cbfn = MEMORY_CB_FN(callback)
+            self._registered_cbs.append(casted_cbfn)
+        self.emu.lib.desmume_memory_register_exec(address, size, casted_cbfn)
+
+
 class DeSmuME:
     def __init__(self, dl_name: str = None):
         self.lib = None
@@ -276,16 +725,16 @@ class DeSmuME:
         self._input = DeSmuME_Input(self)
         self._savestate = DeSmuME_Savestate(self)
         self._movie = DeSmuME_Movie(self)
+        self._memory = DeSmuME_Memory(self)
         self._sdl_window = None
         self._raw_buffer_rgbx = None
 
     def __del__(self):
         if self.lib is not None:
             self.lib.desmume_free()
-            del self._input
-            del self._savestate
-            del self._movie
-            del self._sdl_window
+            self._input.__del__()
+            if self._sdl_window:
+                self._sdl_window.__del__()
             self.lib = None
 
     def destroy(self):
@@ -302,6 +751,10 @@ class DeSmuME:
     @property
     def movie(self):
         return self._movie
+
+    @property
+    def memory(self):
+        return self._memory
 
     def set_language(self, lang: Language):
         self.lib.desmume_set_language(lang.value)
@@ -401,15 +854,8 @@ def _print_movie_stats(emu: 'DeSmuME'):
         print(f"Readonly:  {emu.movie.get_readonly()}")
         print(f"RRcount:   {emu.movie.get_rerecord_count()}")
 
-if __name__ == '__main__':
-    # TODO: Figure out how to specify this correctly.
-    emu = DeSmuME("../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
-    #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-Debug.dll")
 
-    emu.set_language(Language.GERMAN)
-    emu.open("../../skyworkcopy.nds")
-    #emu.open("..\\skyworkcopy.nds")
-    win = emu.create_sdl_window(use_opengl_if_possible=True)
+def test_movie(emu: 'DeSmuME'):
 
     print("> BEFORE")
     _print_movie_stats(emu)
@@ -464,5 +910,94 @@ if __name__ == '__main__':
         win.process_input()
         emu.cycle()
         win.draw()
+
+
+def test_memory_access(emu: 'DeSmuME'):
+    # Below tests only works with EU PMD EoS:
+    start_of_arm_ov11_eu = 0x22DCB80
+    start_of_arm_ov11_us = 0x22DD8E0
+    start_of_arm_ov11 = start_of_arm_ov11_eu
+
+    start_of_loop_fn = start_of_arm_ov11 + 0xF24
+    start_of_loop_fn_loop = start_of_loop_fn + 0x2C
+    start_of_switch_last_return_code = start_of_loop_fn + 0x34
+    start_of_call_to_opcode_parsing = start_of_loop_fn + 0x5C - 4
+
+    emu.volume_set(0)
+
+    for i in range(0, 300):
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+    print("TESTING RANGE UNSIGNED")
+    print(emu.memory.unsigned[start_of_loop_fn:start_of_loop_fn+4])
+    print(" == bytes(f8432de9) ?")
+    print(emu.memory.unsigned[start_of_loop_fn:start_of_loop_fn+4:2])
+    print(" == [17400, 59693] ?")
+    print(emu.memory.unsigned[start_of_loop_fn:start_of_loop_fn+4:4])
+    print(" == [3912057848] ?")
+
+    print("TESTING RANGE SIGNED")
+    print(emu.memory.signed[start_of_loop_fn:start_of_loop_fn+4])
+    print(" == [-8, 67, 45, -23] ?")
+    print(emu.memory.signed[start_of_loop_fn:start_of_loop_fn+4:2])
+    print(" == [17400, -5843] ?")
+    print(emu.memory.signed[start_of_loop_fn:start_of_loop_fn+4:4])
+    print(" == [-382909448] ?")
+
+    print("TESTING SINGLE UNSIGNED")
+    print(emu.memory.unsigned[start_of_loop_fn])
+    print(" == f8 ?")
+    print(emu.memory.unsigned[start_of_loop_fn:start_of_loop_fn:2])
+    print(" == 17400 ?")
+    print(emu.memory.unsigned[start_of_loop_fn:start_of_loop_fn:4])
+    print(" == 3912057848 ?")
+
+    print("TESTING SINGLE SIGNED")
+    print(emu.memory.signed[start_of_loop_fn])
+    print(" == -8 ?")
+    print(emu.memory.signed[start_of_loop_fn:start_of_loop_fn:2])
+    print(" == 17400 ?")
+    print(emu.memory.signed[start_of_loop_fn:start_of_loop_fn:4])
+    print(" == -382909448 ?")
+
+    def test_register_exec_and_read_write(address, size):
+        #print(address)
+        #print(emu.memory.register_arm9.pc)
+        #print(start_of_loop_fn_loop)
+        #assert(address == start_of_loop_fn_loop)
+        #assert(emu.memory.register_arm9.pc == start_of_loop_fn_loop + 8)
+        address_of_struct = emu.memory.register_arm9.r6
+        address_cuurent_op_code = emu.memory.unsigned[address_of_struct + 0x1c]
+        print(f"{emu.memory.unsigned.read_short(address_cuurent_op_code):0x}")
+
+    def test_register_exec_and_read_write_switch(address, size):
+        print(f"LAST RETURN CODE: {emu.memory.register_arm9.r0}")
+
+    emu.memory.register_exec(start_of_call_to_opcode_parsing, test_register_exec_and_read_write)
+    emu.memory.register_exec(start_of_switch_last_return_code, test_register_exec_and_read_write_switch)
+
+    emu.reset()
+
+    while not win.has_quit():
+        win.process_input()
+        emu.cycle()
+        win.draw()
+
+
+if __name__ == '__main__':
+    # TODO: Figure out how to specify this correctly.
+    emu = DeSmuME("../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
+    #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-Debug.dll")
+
+    emu.set_language(Language.GERMAN)
+    emu.open("../../skyworkcopy.nds")
+    #emu.open("..\\skyworkcopy.nds")
+    win = emu.create_sdl_window(use_opengl_if_possible=True)
+
+    #test_movie(emu)
+
+    test_memory_access(emu)
 
     #emu.screenshot().show()

@@ -14,5 +14,3 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-
-__all__ = ['emulator.py', 'controls', 'frontend']
