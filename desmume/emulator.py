@@ -14,7 +14,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-
 import os
 import platform
 from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c_char, c_uint16, c_uint8, Structure, \
@@ -321,37 +320,37 @@ class RegisterAccesor:
 
     def __setitem__(self, item, value):
         if item == 0:
-            return self.r0 == value
+            self.r0 = value
         if item == 1:
-            return self.r1 == value
+            self.r1 = value
         if item == 2:
-            return self.r2 == value
+            self.r2 = value
         if item == 3:
-            return self.r3 == value
+            self.r3 = value
         if item == 4:
-            return self.r4 == value
+            self.r4 = value
         if item == 5:
-            return self.r5 == value
+            self.r5 = value
         if item == 6:
-            return self.r6 == value
+            self.r6 = value
         if item == 7:
-            return self.r7 == value
+            self.r7 = value
         if item == 8:
-            return self.r8 == value
+            self.r8 = value
         if item == 9:
-            return self.r9 == value
+            self.r9 = value
         if item == 10:
-            return self.r10 == value
+            self.r10 = value
         if item == 11:
-            return self.r11 == value
+            self.r11 = value
         if item == 12:
-            return self.r12 == value
+            self.r12 = value
         if item == 13:
-            return self.r13 == value
+            self.r13 = value
         if item == 14:
-            return self.r14 == value
+            self.r14 = value
         if item == 15:
-            return self.r15 == value
+            self.r15 = value
         raise ValueError("Invalid register")
 
     @property
