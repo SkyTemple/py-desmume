@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from gi.repository import Gtk, Gdk
 
@@ -32,11 +32,11 @@ class KeyboardControlsDialogController:
         self.window: Gtk.Window = self.builder.get_object('wKeybConfDlg')
         self.window.set_transient_for(parent_window)
         self.window.set_attached_to(parent_window)
-        self._keyboard_cfg: Optional[Dict[int, str]] = None
+        self._keyboard_cfg: Optional[List[int]] = None
         self._tmp_key = None
         self.builder.connect_signals(self)
 
-    def run(self, keyboard_cfg: Dict[int, str]) -> Optional[Dict[int, str]]:
+    def run(self, keyboard_cfg: List[int]) -> Optional[List[int]]:
         """Configure the keyboard configuration provided using the dialog,
         returns the new keyboard config if changed, else None."""
         self._keyboard_cfg = keyboard_cfg.copy()

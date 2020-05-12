@@ -94,15 +94,13 @@ def load_default_config() -> Tuple[List[int], List[int]]:
 
 def load_configured_config(emu: 'DeSmuME') -> Tuple[List[int], List[int]]:
     """
-    Load the configuration for inputs from the DesMuME config file.
+    Load the default for inputs.
     Also set's the default config for joystick in emulator.
+    TODO: Support loading/saving from the DesMuME config file.
     """
-    # TODO NOT DEFAULT NECESSARILY
     kbcfg, jscfg = load_default_config()
 
     for i, jskey in enumerate(jscfg):
         emu.input.joy_set_key(i, jskey)
 
     return kbcfg, jscfg
-
-# TODO: Functions to load and save from/to DeSmuME config

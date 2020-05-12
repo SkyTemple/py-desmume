@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
 import os
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from gi.repository import Gtk, Gdk
 
@@ -33,15 +33,15 @@ class JoystickControlsDialogController:
         self.window: Gtk.Window = self.builder.get_object('wJoyConfDlg')
         self.window.set_transient_for(parent_window)
         self.window.set_attached_to(parent_window)
-        self.joystick_cfg: Optional[Dict[int, str]] = None
+        self._joystick_cfg: Optional[List[int]] = None
         self._emulator_input: DeSmuME_Input = None
         self.builder.connect_signals(self)
 
     def run(self,
-            joystick_cfg: Dict[int, str],
+            joystick_cfg: List[int],
             emulator_input: DeSmuME_Input,
             emulator_is_running: bool
-            ) -> Dict[int, str]:
+            ) -> List[int]:
         """Configure the joystick configuration provided using the dialog,
         is is immediately changed in the debugger The new/old (if canceled) config is also returned."""
         self._joystick_cfg = joystick_cfg

@@ -1002,6 +1002,11 @@ if __name__ == '__main__':
 
     #emu.set_language(Language.GERMAN)
     emu.open("../../skyworkcopy.nds")
+    with open('/home/marco/austausch/dev/skytemple/arm9_disassembly/bin/EU/arm9.bin', 'wb') as f:
+        f.write(emu.memory.unsigned[0x2000000:0x2200000])
+    emu.open("../../4261 - Pokemon Mystery Dungeon Explorers of Sky (U)(Xenophobia).nds")
+    with open('/home/marco/austausch/dev/skytemple/arm9_disassembly/bin/US/arm9.bin', 'wb') as f:
+        f.write(emu.memory.unsigned[0x2000000:0x2200000])
     #emu.open("..\\skyworkcopy.nds")
     win = emu.create_sdl_window(use_opengl_if_possible=True)
 
