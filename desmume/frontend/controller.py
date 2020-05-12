@@ -19,6 +19,8 @@ import gi
 
 from desmume.controls import Keys, keymask, load_default_config, key_names, load_configured_config
 from desmume.emulator import DeSmuME, NB_STATES, SCREEN_WIDTH, SCREEN_HEIGHT, StartFrom, DeSmuME_Date
+from desmume.frontend.control_ui.joystick_controls import JoystickControlsDialogController
+from desmume.frontend.control_ui.keyboard_controls import KeyboardControlsDialogController
 from desmume.frontend.gtk_drawing_area_desmume import AbstractRenderer
 from desmume.frontend.widget_to_primitive import widget_to_primitive
 
@@ -41,7 +43,6 @@ class MainController:
         self.renderer.init()
 
         self._keyboard_cfg, self._joystick_cfg = load_configured_config(emu)
-        self._keyboard_tmp = self._keyboard_cfg
         self._boost = False
         self._save_fs = 0
         self._frameskip = 0
@@ -63,7 +64,6 @@ class MainController:
         self._screen_no_gap = False
         self._screen_right = False
         self._supress_event = False
-        self._tmp_key = None
 
         self._filter_nds = Gtk.FileFilter()
         self._filter_nds.set_name("Nintendo DS ROMs (*.nds)")
@@ -392,32 +392,14 @@ class MainController:
 
     # MENU CONFIG
     def on_menu_controls_activate(self, menu_item: Gtk.MenuItem, *args):
-        dlg = self.builder.get_object("wKeybConfDlg")
-        for i in range(0, Keys.NB_KEYS):
-            b = self.builder.get_object(f"button_{key_names[i]}")
-            b.set_label(f"{key_names[i]} : {Gdk.keyval_name(self._keyboard_cfg[i])}")
-        dlg.show()
+        new_keyboard_cfg = KeyboardControlsDialogController(self.window).run(self._keyboard_cfg)
+        if new_keyboard_cfg is not None:
+            self._keyboard_cfg = new_keyboard_cfg
 
     def on_menu_joy_controls_activate(self, menu_item: Gtk.MenuItem, *args):
-        if self.emu.input.joy_number_connected() < 1 or self.emu.is_running():
-            if self.emu.input.joy_number_connected() < 1:
-                text = "You don't have any joystick!"
-            else:
-                text = "Can't configure joystick while the game is running!"
-
-            md = Gtk.MessageDialog(None,
-                                   Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR,
-                                   Gtk.ButtonsType.OK, text,
-                                   title="Error!")
-            md.set_position(Gtk.WindowPosition.CENTER)
-            md.run()
-            md.destroy()
-        else:
-            dlg = self.builder.get_object("wJoyConfDlg")
-            for i in range(0, Keys.NB_KEYS):
-                b = self.builder.get_object(f"button_joy_{key_names[i]}")
-                b.set_label(f"{key_names[i]} : {self._joystick_cfg[i]}")
-            dlg.run()
+        self._joystick_cfg = JoystickControlsDialogController(self.window).run(
+            self._joystick_cfg, self.emu.input, self.emu.is_running()
+        )
 
     def on_menu_audio_on_toggled(self, menu_item: Gtk.MenuItem, *args):
         if menu_item.get_active():
@@ -467,48 +449,6 @@ class MainController:
     def on_wc_2_BGXX_toggled(self, w, *args):
         slot = widget_to_primitive(w)
         self.emu.gpu_set_layer_sub_enable_state(slot, self.builder.get_object(f"wc_2_BG{slot}").get_active())
-
-    # KEYBOARD CONFIG / KEY DEFINITION
-    def on_wKeyDlg_key_press_event(self, widget: Gtk.Widget, event: Gdk.EventKey, *args):
-        self._tmp_key = event.keyval
-        self.builder.get_object("label_key").set_text(Gdk.keyval_name(self._tmp_key))
-        return True
-
-    def on_wKeybConfDlg_response(self, dialog: Gtk.Dialog, arg1: int, *args):
-        if arg1 == Gtk.ResponseType.OK:
-            self._keyboard_cfg = self._keyboard_tmp
-        dialog.hide()
-
-    def on_button_kb_key_clicked(self, w, *args):
-        key = widget_to_primitive(w)
-        dlg = self.builder.get_object("wKeyDlg")
-        key -= 1  # key = bit position, start with
-        self._tmp_key = self._keyboard_tmp[key]
-        self.builder.get_object("label_key").set_text(Gdk.keyval_name(self._tmp_key))
-        if dlg.run() == Gtk.ResponseType.OK:
-            self._keyboard_tmp[key] = self._tmp_key
-            self.builder.get_object(f"button_{key_names[key]}").set_label(f"{key_names[key]} : {Gdk.keyval_name(self._tmp_key)}")
-
-        dlg.hide()
-
-    # Joystick configuration / Key definition
-    def on_button_joy_key_clicked(self, w, *args):
-        key = widget_to_primitive(w)
-        dlg = self.builder.get_object("wJoyDlg")
-        key -= 1  # key = bit position, start with
-        self._tmp_key = self._keyboard_tmp[key]
-        dlg.show_now()
-        # Need to force event processing. Otherwise, popup won't show up.
-        while Gtk.events_pending():
-            Gtk.main_iteration()
-
-        joykey = self.emu.input.joy_get_set_key(key)
-
-        self._joystick_cfg[key] = joykey
-
-        self.builder.get_object(f"button_joy_{key_names[key]}").set_label(f"{key_names[key]} : {joykey}")
-
-        dlg.hide()
 
     def lookup_key(self, keyval):
         key = False

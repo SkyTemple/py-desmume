@@ -985,18 +985,29 @@ def test_memory_access(emu: 'DeSmuME'):
         win.draw()
 
 
+def test_manual_fs(emu, win):
+    i = 1
+    while not win.has_quit():
+        win.process_input()
+        emu.cycle()
+        i += 1
+        if i % 20 == 0:
+            win.draw()
+            i = 1
+
 if __name__ == '__main__':
     # TODO: Figure out how to specify this correctly.
     emu = DeSmuME("../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
     #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-Debug.dll")
 
-    emu.set_language(Language.GERMAN)
+    #emu.set_language(Language.GERMAN)
     emu.open("../../skyworkcopy.nds")
     #emu.open("..\\skyworkcopy.nds")
     win = emu.create_sdl_window(use_opengl_if_possible=True)
 
     #test_movie(emu)
 
-    test_memory_access(emu)
+    #test_memory_access(emu)
+    test_manual_fs(emu, win)
 
     #emu.screenshot().show()
