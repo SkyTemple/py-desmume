@@ -19,8 +19,10 @@ cd /tmp/pkg-config-0.29.2
 make
 make install
 export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
-
 # End fun!
+
+# For some reasons AVX512 stage 1 support seems to be broken on the build server
+export CXXFLAGS="-DFORCE_AVX512_0=1"
 
 for PYBIN in /opt/python/*/bin; do
     if [[ "$PYBIN" != *"cp27"* ]] && [[ "$PYBIN" != *"cp35"* ]]; then
