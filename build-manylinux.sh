@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -x
+set -e
 cd /io
+
+rm /io/__build_desmume -rf || true
+rm /io/build -rf || true
 
 yum install zlib-devel libpcap-devel SDL-devel agg-devel soundtouch-devel openal-soft-devel glib2-devel libtool autoconf automake -y
 

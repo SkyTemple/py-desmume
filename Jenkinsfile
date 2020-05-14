@@ -8,17 +8,17 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Setup virtual env
-                sh "rm -rf .venv || true"
-                sh "virtualenv .venv"
+                script {
+                    // Setup virtual env
+                    sh "rm -rf .venv || true"
+                    sh "virtualenv .venv"
 
-                // Run build
-                sh "rm -rf dist build || true"
-                wd = pwd()
-                docker.image("quay.io/pypa/manylinux2010_x86_64").inside(" \
-                        -v ${wd}:/io
-                    ") {
-                      sh '/io/build-manylinux.sh'
+                    // Run build
+                    sh "rm -rf dist build || true"
+                    wd = pwd()
+                    docker.image("quay.io/pypa/manylinux2010_x86_64").inside("-v ${wd}:/io -u root") {
+                          sh '/io/build-manylinux.sh'
+                    }
                 }
             }
             post {
