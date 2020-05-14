@@ -133,7 +133,7 @@ class BuildExt(build_ext):
 
 setup(
     name='py-desmume',
-    version='0.0.1',
+    version='0.0.1.post1',
     packages=find_packages(),
     package_data={'desmume': ['**/*.css', '**/*.glade', 'libdesmume.so', '*.dll']},
     description='Python library to interface with DeSmuME, the Nintendo DS emulator + sample GTK-based frontend',
@@ -141,7 +141,7 @@ setup(
     long_description_content_type='text/x-rst',
     url='https://github.com/SkyTemple/py-desmume/',
     install_requires=[
-        'Pillow >= 7.1.0'
+        'Pillow >= 6.1.0'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
