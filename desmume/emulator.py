@@ -700,21 +700,37 @@ class DeSmuME:
 
         # Load the correct library
         if dl_name is None:
-            if platform.system().lower().startswith('windows'):
-                dl_name = "libdesmume.dll"
-                os.add_dll_directory(os.getcwd())
-            elif platform.system().lower().startswith('linux'):
-                dl_name = "libdesmume.so"
-            elif platform.system().lower().startswith('darwin'):
-                dl_name = "libdesmume.dylib"
-            else:
-                RuntimeError(f"Unknown platform {platform.system()}, can't autodetect DLL to load.")
+            # Try autodetect / CWD
+            try:
+                if platform.system().lower().startswith('windows'):
+                    dl_name = "libdesmume.dll"
+                    os.add_dll_directory(os.getcwd())
+                elif platform.system().lower().startswith('linux'):
+                    dl_name = "libdesmume.so"
+                elif platform.system().lower().startswith('darwin'):
+                    dl_name = "libdesmume.dylib"
+                else:
+                    RuntimeError(f"Unknown platform {platform.system()}, can't autodetect DLL to load.")
+
+                self.lib = cdll.LoadLibrary(dl_name)
+            except OSError:
+                # Okay now try the package directory
+                dl_name = os.path.dirname(os.path.realpath(__file__))
+                if platform.system().lower().startswith('windows'):
+                    os.add_dll_directory(dl_name)
+                    dl_name = os.path.join(dl_name, "libdesmume.dll")
+                elif platform.system().lower().startswith('linux'):
+                    dl_name = os.path.join(dl_name, "libdesmume.so")
+                elif platform.system().lower().startswith('darwin'):
+                    dl_name = os.path.join(dl_name, "libdesmume.dylib")
+
+                self.lib = cdll.LoadLibrary(dl_name)
         else:
             if platform.system().lower().startswith('windows'):
                 os.add_dll_directory(os.path.dirname(dl_name))
                 dl_name = os.path.basename(dl_name)
 
-        self.lib = cdll.LoadLibrary(dl_name)
+            self.lib = cdll.LoadLibrary(dl_name)
 
         self.lib.desmume_set_savetype(0)
 
@@ -995,19 +1011,12 @@ def test_manual_fs(emu, win):
             win.draw()
             i = 1
 
+
 if __name__ == '__main__':
-    # TODO: Figure out how to specify this correctly.
-    emu = DeSmuME("../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
-    #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-Debug.dll")
+    emu = DeSmuME()
 
     #emu.set_language(Language.GERMAN)
     emu.open("../../skyworkcopy.nds")
-    with open('/home/marco/austausch/dev/skytemple/arm9_disassembly/bin/EU/arm9.bin', 'wb') as f:
-        f.write(emu.memory.unsigned[0x2000000:0x2200000])
-    emu.open("../../4261 - Pokemon Mystery Dungeon Explorers of Sky (U)(Xenophobia).nds")
-    with open('/home/marco/austausch/dev/skytemple/arm9_disassembly/bin/US/arm9.bin', 'wb') as f:
-        f.write(emu.memory.unsigned[0x2000000:0x2200000])
-    #emu.open("..\\skyworkcopy.nds")
     win = emu.create_sdl_window(use_opengl_if_possible=True)
 
     #test_movie(emu)

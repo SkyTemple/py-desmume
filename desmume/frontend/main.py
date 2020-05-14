@@ -32,9 +32,7 @@ def main():
     path = os.path.abspath(os.path.dirname(__file__))
 
     # Load desmume
-    # TODO: Dummy
-    emu = DeSmuME("../../../../desmume/desmume/src/frontend/interface/.libs/libdesmume.so")
-    #emu = DeSmuME("Y:\\dev\\desmume\\desmume\\src\\frontend\\interface\\windows\\__bins\\DeSmuME Interface-VS2019-x64-Debug.dll")
+    emu = DeSmuME()
 
     # Init joysticks
     emu.input.joy_init()
