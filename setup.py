@@ -111,12 +111,14 @@ class BuildExt(build_ext):
     def build_windows(self, interface_path):
         """Requires Visual Studio."""
         is_64bits = sys.maxsize > 2 ** 32
+        # TODO: Support 32bit build on 64bit Windows.
         arch_dirname = 'x64' if is_64bits else 'x86'
+        arch_targetname = 'x64' if is_64bits else 'Win32'
 
         win_path = os.path.join(interface_path, "windows")
         os.chdir(win_path)
         print(f"BUILDING WINDOWS - msbuild.exe")
-        retcode = subprocess.call("msbuild.exe igraph.vcxproj /p:configuration=Release", shell=True)
+        retcode = subprocess.call(f"msbuild.exe DeSmuME_Interface.vcxproj /p:configuration=Release /p:Platform={arch_targetname}", shell=True)
         if retcode:
             return False
 

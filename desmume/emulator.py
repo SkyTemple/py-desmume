@@ -21,7 +21,10 @@ from ctypes import cdll, create_string_buffer, cast, c_char_p, POINTER, c_int, c
 from enum import Enum
 from typing import Union, Callable, List, Optional
 
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    from pil import Image
 
 from desmume.controls import add_key, rm_key
 
