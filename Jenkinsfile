@@ -18,6 +18,7 @@ pipeline {
                     wd = pwd()
                     docker.image("quay.io/pypa/manylinux2010_x86_64").inside("-v ${wd}:/io -u root") {
                           sh '/io/build-manylinux.sh'
+                          sh "rm /io/py_desmume.egg-info -rf"
                     }
                 }
             }
@@ -36,7 +37,7 @@ pipeline {
                 TWINE    = credentials('parakoopa-twine-username-password')
             }
             steps {
-                sh 'twine upload -u "$TWINE_USR" -p "$TWINE_PSW" dist/*'
+                sh 'twine upload -u "$TWINE_USR" -p "$TWINE_PSW" dist/*manylinux2010*'
             }
         }
 
