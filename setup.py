@@ -25,6 +25,7 @@ from glob import glob
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
+from setuptools.command.develop import develop
 from setuptools.command.install import install
 
 # README read-in
@@ -33,6 +34,8 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 # END README read-in
+
+is_installed_develop = False
 
 
 class BinaryDistribution(Distribution):
@@ -51,10 +54,21 @@ class InstallPlatlib(install):
             self.install_lib = self.install_platlib
 
 
+class Develop(develop):
+    def run(self):
+        global is_installed_develop
+        is_installed_develop = True
+        super().run()
+
+
 class BuildExt(build_ext):
     """Compiles the shared object using automake or the DLL using Visual Studio, depending on platform."""
     def run(self):
+        # Don't build in develop mode
+        if is_installed_develop:
+            return
         from git import Repo
+
         this_path = os.getcwd()
         path_repo = os.path.join(this_path, '__build_desmume')
         path_interface = os.path.join(path_repo, 'desmume', 'src', 'frontend', 'interface')
@@ -154,5 +168,5 @@ setup(
         'Programming Language :: Python :: 3.8'
     ],
     distclass=BinaryDistribution,
-    cmdclass={'build_ext': BuildExt, 'install': InstallPlatlib}
+    cmdclass={'build_ext': BuildExt, 'install': InstallPlatlib, 'develop': Develop}
 )
