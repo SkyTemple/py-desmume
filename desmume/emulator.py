@@ -804,8 +804,8 @@ class DeSmuME:
     def skip_next_frame(self):
         self.lib.desmume_skip_next_frame()
 
-    def cycle(self):
-        self.lib.desmume_cycle()
+    def cycle(self, with_joystick=True):
+        self.lib.desmume_cycle(with_joystick)
 
     def has_opengl(self) -> bool:
         return bool(self.lib.desmume_has_opengl())

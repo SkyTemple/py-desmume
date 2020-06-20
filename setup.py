@@ -150,7 +150,7 @@ class BuildExt(build_ext):
 
 setup(
     name='py-desmume',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(),
     package_data={'desmume': ['**/*.css', '**/*.glade', '**/control_ui/*.glade', 'libdesmume.so', '*.dll']},
     description='Python library to interface with DeSmuME, the Nintendo DS emulator + sample GTK-based frontend',
