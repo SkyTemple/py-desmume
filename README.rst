@@ -1,11 +1,15 @@
 py-desmume
 ==========
 
-|build| |pypi-version| |pypi-downloads| |pypi-license| |pypi-pyversions|
+|build| |docs| |pypi-version| |pypi-downloads| |pypi-license| |pypi-pyversions|
 
 .. |build| image:: https://jenkins.riptide.parakoopa.de/buildStatus/icon?job=py-desmume%2Fmaster
     :target: https://jenkins.riptide.parakoopa.de/blue/organizations/jenkins/py-desmume/activity
     :alt: Build Status
+
+.. |docs| image:: https://readthedocs.org/projects/py-desmume/badge/?version=latest
+    :target: https://py-desmume.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 .. |pypi-version| image:: https://img.shields.io/pypi/v/py-desmume
     :target: https://pypi.org/project/py-desmume/
@@ -24,12 +28,12 @@ py-desmume
 A Python library for DeSmuME, the Nintendo DS library.
 
 - Library to interface with a `DeSmuME fork`_ that has a binary interface.
-- Reimplementation of the Glade GTK interface in GTK3.
+- Reimplementation of the DeSmuME Glade-GTK UI with GTK3.
 
 Running the setup.py (eg. via pip) compiles the library from the fork. Wheels are available
-for Linux and Windows.
+for Linux, Windows and MacOS.
 
-There's no API documentation at the moment, but you can find the entire libary in
-``desmume.emulator``.
+Documentation can be found in the ``docs`` directory and at
+https://py-desmume.readthedocs.org.
 
 .. _DeSmuME fork: https://github.com/SkyTemple/desmume/tree/binary-interface

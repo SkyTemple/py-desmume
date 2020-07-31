@@ -1,4 +1,9 @@
-"""Some simple ports from sdlcntrl.cpp that are generally useful for dealing with controls"""
+"""
+Some simple ports from sdlcntrl.cpp that are generally useful for dealing with controls.
+
+Some of this only applies if used with GTK (eg. the keyboard configuration), other things
+apply generally, such as the joystick configuration.
+"""
 #  Copyright 2020 Marco Köpcke (Parakoopa)
 # 
 #  This file is part of py-desmume.
@@ -22,12 +27,14 @@ if TYPE_CHECKING:
 
 
 class Joy:
+    """Joystick input types."""
     JOY_AXIS = 0
     JOY_HAT = 1
     JOY_BUTTON = 2
 
 
 class JoyHats:
+    """Jostick hat identifiers."""
     JOY_HAT_RIGHT = 0
     JOY_HAT_LEFT = 1
     JOY_HAT_UP = 2
@@ -35,6 +42,7 @@ class JoyHats:
 
 
 class Keys:
+    """DS key identifiers. NB_KEYS contains the total number of keys."""
     NB_KEYS	= 15
     KEY_NONE = 0
     KEY_A = 1
@@ -73,21 +81,37 @@ key_names = [
     "Lid"
 ]
 
+
 def add_key(keypad, key):
+    """
+    Add a key to a keypad -> press the key. ``key`` is the keymask returned by ``keymask``.
+
+    You don't need to call this manually, see
+    :func:`~desmume.module.emulator.DeSmuME_Input.keypad_add_key` instead.
+    """
     return keypad | key
 
 
 def rm_key(keypad, key):
+    """
+    Remove a key from a keypad -> release the key. ``key`` is the keymask returned by ``keymask``.
+
+    You don't need to call this manually, see
+    :func:`~desmume.module.emulator.DeSmuME_Input.keypad_rm_key` instead.
+    """
     return keypad & ~key
 
 
 def keymask(k):
+    """Returns the keymask for key ``k``. ``k`` is a constant of the ``Keys`` class."""
     return 1 << k
 
 
 def load_default_config() -> Tuple[List[int], List[int]]:
     """
     Returns the default (keyboard configuration),(joystick configuration).
+
+    The keyboard configuration is Gdk key IDs.
     """
     return default_config_keyboard, default_config_joystick
 
@@ -96,7 +120,10 @@ def load_configured_config(emu: 'DeSmuME') -> Tuple[List[int], List[int]]:
     """
     Load the default for inputs.
     Also set's the default config for joystick in emulator.
-    TODO: Support loading/saving from the DesMuME config file.
+
+    The keyboard configuration is Gdk key IDs.
+
+    :todo: Support loading/saving from the DesMuME config file.
     """
     kbcfg, jscfg = load_default_config()
 

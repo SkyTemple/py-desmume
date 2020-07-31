@@ -1,0 +1,11 @@
+project:
+  name: py-desmume-docs
+  src: .
+  app:
+    $ref: /app/sphinx/latest
+    services:
+      sphinx:
+        environment:
+          REQUIREMENTS_FILE: "requirements-docs.txt"
+          SPHINX_SOURCE: docs
+          SPHINX_BUILD: docs/build
