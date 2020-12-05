@@ -3,8 +3,8 @@ py-desmume
 
 |build| |docs| |pypi-version| |pypi-downloads| |pypi-license| |pypi-pyversions|
 
-.. |build| image:: https://jenkins.riptide.parakoopa.de/buildStatus/icon?job=py-desmume%2Fmaster
-    :target: https://jenkins.riptide.parakoopa.de/blue/organizations/jenkins/py-desmume/activity
+.. |build| image:: https://img.shields.io/github/workflow/status/SkyTemple/py-desmume/Build,%20test%20and%20publish
+    :target: https://pypi.org/project/py-desmume/
     :alt: Build Status
 
 .. |docs| image:: https://readthedocs.org/projects/py-desmume/badge/?version=latest
