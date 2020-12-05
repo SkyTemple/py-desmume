@@ -1,0 +1,63 @@
+# Builds on all branches & PRs
+# Deploys to PyPi on "release".
+name: Build, test and publish
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    name: Build the Python wheel
+    steps:
+      # For tags we assume the version in setup.py is correct!
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Rewrite version for dev if not tag
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: |
+          perl -i -pe "s/__version__\s*=\s*'(.*?)(rc.*|a.*|post.*)?'/__version__='\1.dev${GITHUB_SHA::8}'/" setup.py
+      - name: Note version
+        run: |
+          echo "PACKAGE_VERSION=$(python3 -- ./setup.py --version)" >> $GITHUB_ENV
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+      - name: Build Python wheels
+        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_x86_64
+        with:
+          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
+          build-requirements: 'GitPython'
+          pre-build-command: 'sh ./build-manylinux.sh'
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: dist/*.whl
+  deploy:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-18.04
+    name: Deploy wheels to PyPI
+    steps:
+      - name: Download wheels
+        uses: actions/download-artifact@v2
+        with:
+          name: wheels
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+          pip install twine
+      - name: Publish wheels to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload *.whl

@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-
+__version__ = '0.0.3'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
@@ -150,7 +150,7 @@ class BuildExt(build_ext):
 
 setup(
     name='py-desmume',
-    version='0.0.3',
+    version=__version__,
     packages=find_packages(),
     package_data={'desmume': ['**/*.css', '**/*.glade', '**/control_ui/*.glade', 'libdesmume.so', '*.dll']},
     description='Python library to interface with DeSmuME, the Nintendo DS emulator + sample GTK-based frontend',
