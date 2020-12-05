@@ -32,6 +32,9 @@ jobs:
           python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39'
           build-requirements: 'GitPython'
           pre-build-command: 'sh ./build-manylinux.sh'
+        env:
+          CXXFLAGS: "-DFORCE_AVX512_0=1"
+          PKG_CONFIG_PATH: "/usr/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
