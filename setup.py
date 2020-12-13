@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-__version__ = '0.0.3'
+__version__ = '0.0.3.post1'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
@@ -166,7 +166,8 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8'
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
     distclass=BinaryDistribution,
     cmdclass={'build_ext': BuildExt, 'install': InstallPlatlib, 'develop': Develop}
