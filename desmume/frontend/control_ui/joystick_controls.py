@@ -30,8 +30,13 @@ class JoystickControlsDialogController:
     """This dialog shows the joystick controls."""
     def __init__(self, parent_window: Gtk.Window):
         path = os.path.abspath(os.path.dirname(__file__))
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(path, "PyDeSmuMe_controls.glade"))
+        # SkyTemple translation support
+        try:
+            from skytemple.core.ui_utils import make_builder
+            self.builder = make_builder(os.path.join(path, "PyDeSmuMe_controls.glade"))
+        except ImportError:
+            self.builder = Gtk.Builder()
+            self.builder.add_from_file(os.path.join(path, "PyDeSmuMe_controls.glade"))
         self.window: Gtk.Window = self.builder.get_object('wJoyConfDlg')
         self.window.set_transient_for(parent_window)
         self.window.set_attached_to(parent_window)
