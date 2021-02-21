@@ -19,7 +19,7 @@ from typing import Dict, Optional, List
 
 from gi.repository import Gtk, Gdk
 
-from desmume.controls import key_names, Keys
+from desmume.controls import key_names, Keys, key_names_localized
 from desmume.frontend.widget_to_primitive import widget_to_primitive
 
 
@@ -42,7 +42,7 @@ class KeyboardControlsDialogController:
         self._keyboard_cfg = keyboard_cfg.copy()
         for i in range(0, Keys.NB_KEYS):
             b = self.builder.get_object(f"button_{key_names[i]}")
-            b.set_label(f"{key_names[i]} : {Gdk.keyval_name(self._keyboard_cfg[i])}")
+            b.set_label(f"{key_names_localized[i]} : {Gdk.keyval_name(self._keyboard_cfg[i])}")
         response = self.window.run()
 
         self.window.hide()
@@ -63,7 +63,7 @@ class KeyboardControlsDialogController:
         self.builder.get_object("label_key").set_text(Gdk.keyval_name(self._tmp_key))
         if dlg.run() == Gtk.ResponseType.OK:
             self._keyboard_cfg[key] = self._tmp_key
-            self.builder.get_object(f"button_{key_names[key]}").set_label(f"{key_names[key]} : {Gdk.keyval_name(self._tmp_key)}")
+            self.builder.get_object(f"button_{key_names[key]}").set_label(f"{key_names_localized[key]} : {Gdk.keyval_name(self._tmp_key)}")
 
         dlg.hide()
 

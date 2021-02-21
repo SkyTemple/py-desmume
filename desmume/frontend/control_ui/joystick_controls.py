@@ -23,7 +23,7 @@ from gi.repository import Gtk, Gdk
 from desmume.controls import key_names, Keys, key_names_localized
 from desmume.emulator import DeSmuME_Input
 from desmume.frontend.widget_to_primitive import widget_to_primitive
-_ = gettext.gettext
+from desmume.i18n_util import _
 
 
 class JoystickControlsDialogController:
