@@ -14,14 +14,16 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
+import gettext
 import os
 from typing import Dict, Optional, List
 
 from gi.repository import Gtk, Gdk
 
-from desmume.controls import key_names, Keys
+from desmume.controls import key_names, Keys, key_names_localized
 from desmume.emulator import DeSmuME_Input
 from desmume.frontend.widget_to_primitive import widget_to_primitive
+from desmume.i18n_util import _
 
 
 class JoystickControlsDialogController:
@@ -48,9 +50,9 @@ class JoystickControlsDialogController:
         self._emulator_input = emulator_input
         if self._emulator_input.joy_number_connected() < 1 or emulator_is_running:
             if self._emulator_input.joy_number_connected() < 1:
-                text = "You don't have any joystick!"
+                text = _("You don't have any joypads!")
             else:
-                text = "Can't configure joystick while the game is running!"
+                text = _("Can't configure joystick while the game is running!")
 
             md = Gtk.MessageDialog(None,
                                    Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR,
@@ -62,7 +64,7 @@ class JoystickControlsDialogController:
         else:
             for i in range(0, Keys.NB_KEYS):
                 b = self.builder.get_object(f"button_joy_{key_names[i]}")
-                b.set_label(f"{key_names[i]} : {self._joystick_cfg[i]}")
+                b.set_label(f"{key_names_localized[i]} : {self._joystick_cfg[i]}")
             self.window.run()
             self.window.hide()
 
@@ -89,7 +91,7 @@ class JoystickControlsDialogController:
 
         self._joystick_cfg[key] = joykey
 
-        self.builder.get_object(f"button_joy_{key_names[key]}").set_label(f"{key_names[key]} : {joykey}")
+        self.builder.get_object(f"button_joy_{key_names[key]}").set_label(f"{key_names_localized[key]} : {joykey}")
 
         dlg.hide()
 

@@ -21,6 +21,8 @@ apply generally, such as the joystick configuration.
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
 from typing import Tuple, List, TYPE_CHECKING
+from desmume.i18n_util import _
+
 
 if TYPE_CHECKING:
     from desmume.emulator import DeSmuME
@@ -79,6 +81,25 @@ key_names = [
     "R", "L", "X", "Y",
     "Debug", "Boost",
     "Lid"
+]
+
+
+key_names_localized = [
+    _("A"),  # TRANSLATORS: DS Key name
+    _("B"),  # TRANSLATORS: DS Key name
+    _("Select"),  # TRANSLATORS: DS Key name
+    _("Start"),  # TRANSLATORS: DS Key name
+    _("Right"),  # TRANSLATORS: DS Key name
+    _("Left"),  # TRANSLATORS: DS Key name
+    _("Up"),  # TRANSLATORS: DS Key name
+    _("Down"),  # TRANSLATORS: DS Key name
+    _("R"),  # TRANSLATORS: DS Key name
+    _("L"),  # TRANSLATORS: DS Key name
+    _("X"),  # TRANSLATORS: DS Key name
+    _("Y"),  # TRANSLATORS: DS Key name
+    _("Debug"),  # TRANSLATORS: DS Key name
+    _("Boost"),  # TRANSLATORS: DS Key name
+    _("Lid")  # TRANSLATORS: DS Key name
 ]
 
 
