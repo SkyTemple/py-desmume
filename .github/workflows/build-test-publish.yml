@@ -33,7 +33,7 @@ jobs:
           build-requirements: 'GitPython'
           pre-build-command: 'sh ./build-manylinux.sh'
         env:
-          CXXFLAGS: "-DFORCE_AVX512_0=1"
+          CXXFLAGS: "-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=199309L"  # Posix C-Source required for some time constants.
           PKG_CONFIG_PATH: "/usr/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
       - name: Upload wheels
         uses: actions/upload-artifact@v2
