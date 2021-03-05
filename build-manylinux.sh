@@ -5,7 +5,7 @@ set -e
 rm __build_desmume -rf || true
 rm build -rf || true
 
-yum install zlib-devel libpcap-devel SDL-devel agg-devel soundtouch-devel openal-soft-devel glib2-devel libtool autoconf automake -y
+yum install zlib-devel libpcap-devel SDL-devel agg-devel soundtouch-devel openal-soft-devel glib2-devel libtool autoconf automake meson -y
 
 # Fun! The pkgconfig version of CentOS 6 is way too old!
 curl https://parakoopa.de/pkg-config-0.29.2.tar.gz -s -o /tmp/pkg-config.tar.gz

@@ -105,35 +105,32 @@ class BuildExt(build_ext):
     def build_linux(self, interface_path):
         """Tested against manylinux2014, see Jenkinsfile for requirements."""
         os.chdir(interface_path)
-        print(f"BUILDING LINUX - ./autogen.sh")
-        retcode = subprocess.call("./autogen.sh", shell=True)
+        print(f"BUILDING LINUX - meson build")
+        retcode = subprocess.call(["meson", "build"])
         if retcode:
             return False
-        print(f"BUILDING LINUX - ./configure")
-        retcode = subprocess.call('CFLAGS="$CFLAGS -O3 -march=native" CXXFLAGS="$CXXFLAGS -O3 -march=native" '
-                                  './configure --enable-openal', shell=True)
-        if retcode:
-            return False
-        print(f"BUILDING LINUX - make")
-        retcode = subprocess.call('make', shell=True)
+        print(f"BUILDING LINUX - ninja")
+        os.chdir('build')
+        retcode = subprocess.call("ninja")
         if retcode:
             return False
 
         return [
-            os.path.abspath(os.path.join(interface_path, '.libs', 'libdesmume.so'))
+            os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))
         ]
 
     def build_windows(self, interface_path):
         """Requires Visual Studio."""
         is_64bits = sys.maxsize > 2 ** 32
-        # TODO: Support 32bit build on 64bit Windows.
+        if os.getenv('BUILD_32', False):
+            is_64bits = False
         arch_dirname = 'x64' if is_64bits else 'x86'
         arch_targetname = 'x64' if is_64bits else 'Win32'
 
         win_path = os.path.join(interface_path, "windows")
         os.chdir(win_path)
         print(f"BUILDING WINDOWS - msbuild.exe")
-        retcode = subprocess.call(f"msbuild.exe DeSmuME_Interface.vcxproj /p:configuration=Release /p:Platform={arch_targetname}", shell=True)
+        retcode = subprocess.call(["msbuild.exe", "DeSmuME_Interface.vcxproj", "/p:configuration=Release", f"/p:Platform={arch_targetname}"])
         if retcode:
             return False
 
@@ -145,7 +142,7 @@ class BuildExt(build_ext):
         return [
             os.path.abspath(new_name_dll),
             # Also include the required SDL lib
-            os.path.abspath(os.path.join(win_path, 'SDL', 'lib', arch_dirname, 'SDL.dll'))
+            os.path.abspath(os.path.join(win_path, 'SDL', 'lib', arch_dirname, 'SDL2.dll'))
         ]
 
 setup(
