@@ -115,9 +115,12 @@ class BuildExt(build_ext):
         if retcode:
             return False
 
-        return [
-            os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))
-        ]
+        if platform.system() == "Darwin":
+            os.rename(
+                os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.dylib')),
+                os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))
+            )
+        return [os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))]
 
     def build_windows(self, interface_path):
         """Requires Visual Studio."""
