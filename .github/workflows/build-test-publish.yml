@@ -82,6 +82,8 @@ jobs:
         env:
           CC: gcc-10
           CXX: g++-10
+          BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
+          FASTBUILD: "1"
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:
@@ -98,8 +100,6 @@ jobs:
           { msystem: MINGW32, arch: i686, path: mingw32 }
         ]
     steps:
-      - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
       - name: Install MSys2 and dependencies
         uses: msys2/setup-msys2@v2
         with:
@@ -121,7 +121,7 @@ jobs:
         shell: msys2 {0}
         run: |
           perl -i -pe "s/__version__\s*=\s*'(.*?)(\.rc.*|\.a.*|\.post.*)?'/__version__='\1.dev0+${GITHUB_SHA::8}'/" setup.py
-      - name: Note version
+      - name: Note version and add VS to path
         shell: msys2 {0}
         run: |
           echo "PACKAGE_VERSION=$(python3 -- ./setup.py --version)" >> $GITHUB_ENV
@@ -129,15 +129,13 @@ jobs:
         shell: msys2 {0}
         run: |
           python -m pip install --upgrade pip GitPython wheel
-      - name: Fix Path
+      - name: Build Python wheels  # microsoft/setup-msbuild@v1.0.2 doesn't work here
         shell: msys2 {0}
         run: |
-          ls /${{ matrix.path }}/bin
-          ln -s /${{ matrix.path }}/bin/mingw*-make.exe /${{ matrix.path }}/bin/make.exe
-      - name: Build Python wheels
-        shell: msys2 {0}
-        run: |
-          python setup.py bdist_wheel
+          PATH="$PATH:/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin" python setup.py bdist_wheel
+        env:
+          BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
+          FASTBUILD: "1"
       - name: Upload wheels
         uses: actions/upload-artifact@v2
         with:

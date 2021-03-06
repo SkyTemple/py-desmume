@@ -133,7 +133,10 @@ class BuildExt(build_ext):
         win_path = os.path.join(interface_path, "windows")
         os.chdir(win_path)
         print(f"BUILDING WINDOWS - msbuild.exe")
-        retcode = subprocess.call(["msbuild.exe", "DeSmuME_Interface.vcxproj", "/p:configuration=Release", f"/p:Platform={arch_targetname}"])
+        config = "Release"
+        if os.environ.get('FASTBUILD', False):
+            config = "Release Fastbuild"
+        retcode = subprocess.call(["MSBuild.exe", "DeSmuME_Interface.vcxproj", f"/p:configuration={config}", f"/p:Platform={arch_targetname}"])
         if retcode:
             return False
 
