@@ -164,4 +164,4 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload *manylinux*.whl *win*.whl *macosx*.whl
+          twine upload wheels-linux/*manylinux*.whl wheels-windows*/*.whl wheels-macos*/*.whl
