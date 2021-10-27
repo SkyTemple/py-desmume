@@ -9,7 +9,7 @@ yum install zlib-devel libpcap-devel SDL2-devel agg-devel soundtouch-devel opena
 
 # Fun! The pkgconfig version of CentOS 6 is way too old!
 (
-  curl https://parakoopa.de/pkg-config-0.29.2.tar.gz -s -o /tmp/pkg-config.tar.gz
+  curl https://capypara.de/pkg-config-0.29.2.tar.gz -s -o /tmp/pkg-config.tar.gz
   cd /tmp/
   tar -zxvf /tmp/pkg-config.tar.gz
   cd /tmp/pkg-config-0.29.2
