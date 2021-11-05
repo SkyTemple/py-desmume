@@ -78,14 +78,13 @@ class BuildExt(build_ext):
         # Clone the repository - TODO: Switch to stable tar/zip download at some point.
         if not os.path.exists(path_repo):
             print("Cloning the py_desmume repository.")
-            repo = Repo.clone_from("https://github.com/TASEmulators/desmume.git", path_repo)
+            Repo.clone_from("https://github.com/TASEmulators/desmume.git", path_repo)
 
         # Run the build script depending on the platform
         if is_windows:
             libraries = self.build_windows(path_interface)
         else:
-            # TODO: Doesn't work on Mac, I'd assume.
-            libraries = self.build_linux(path_interface)
+            libraries = self.build_unix(path_interface)
         if not libraries:
             print("Could not compile the DeSmuME library.")
             print("")
@@ -101,7 +100,7 @@ class BuildExt(build_ext):
             print(f"Copying {library} -> {build_target}")
             shutil.copyfile(library, build_target)
 
-    def build_linux(self, interface_path):
+    def build_unix(self, interface_path):
         """Tested against manylinux2014, see Jenkinsfile for requirements."""
         os.chdir(interface_path)
         print(f"BUILDING LINUX - meson build")
@@ -114,11 +113,9 @@ class BuildExt(build_ext):
             return False
 
         if platform.system() == "Darwin":
-            os.rename(
-                os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.dylib')),
-                os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))
-            )
-        return [os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))]
+            return [os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.dylib'))]
+        else:
+            return [os.path.abspath(os.path.join(interface_path, 'build', 'libdesmume.so'))]
 
     def build_windows(self, interface_path):
         """Requires Visual Studio."""
@@ -153,7 +150,7 @@ setup(
     name='py-desmume',
     version=__version__,
     packages=find_packages(),
-    package_data={'desmume': ['**/*.css', '**/*.glade', '**/control_ui/*.glade', 'libdesmume.so', '*.dll']},
+    package_data={'desmume': ['**/*.css', '**/*.glade', '**/control_ui/*.glade', 'libdesmume.so', 'libdesmume.dylib', '*.dll']},
     description='Python library to interface with DeSmuME, the Nintendo DS emulator + sample GTK-based frontend',
     long_description=long_description,
     long_description_content_type='text/x-rst',
