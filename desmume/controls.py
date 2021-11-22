@@ -125,7 +125,7 @@ def rm_key(keypad, key):
 
 def keymask(k):
     """Returns the keymask for key ``k``. ``k`` is a constant of the ``Keys`` class."""
-    return 1 << k
+    return 1 << (k - 1) if k > 0 else 0
 
 
 def load_default_config() -> Tuple[List[int], List[int]]:
