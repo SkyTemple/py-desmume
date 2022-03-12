@@ -78,8 +78,7 @@ class BuildExt(build_ext):
         # Clone the repository - TODO: Switch to stable tar/zip download at some point.
         if not os.path.exists(path_repo):
             print("Cloning the py_desmume repository.")
-            repo = Repo.clone_from("https://github.com/SkyTemple/desmume.git", path_repo)
-            repo.git.checkout("binary-interface")
+            repo = Repo.clone_from("https://github.com/TASEmulators/desmume.git", path_repo)
 
         # Run the build script depending on the platform
         if is_windows:
@@ -110,8 +109,7 @@ class BuildExt(build_ext):
         if retcode:
             return False
         print(f"BUILDING LINUX - ninja")
-        os.chdir('build')
-        retcode = subprocess.call("ninja")
+        retcode = subprocess.call(["ninja", "-C", "build"])
         if retcode:
             return False
 
