@@ -105,7 +105,7 @@ class BuildExt(build_ext):
         """Tested against manylinux2014, see Jenkinsfile for requirements."""
         os.chdir(interface_path)
         print(f"BUILDING LINUX - meson build")
-        retcode = subprocess.call(["meson", "build"])
+        retcode = subprocess.call(["meson", "build", "--buildtype=release"])
         if retcode:
             return False
         print(f"BUILDING LINUX - ninja")
