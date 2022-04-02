@@ -141,7 +141,7 @@ jobs:
         with:
           name: wheels-msys2-py-${{ matrix.msystem }}
           path: dist/*.whl
-  deploy:
+  deploy-to-pypi:
     if: startsWith(github.ref, 'refs/tags/')
     needs:
       - build_linux
@@ -165,3 +165,28 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           twine upload wheels-linux/*manylinux*.whl wheels-windows*/*.whl wheels-macos*/*.whl
+  deploy-to-gh-pages:
+    name: Deploy wheels to GitHub Pages Index
+    runs-on: ubuntu-latest
+    needs:
+      - build_linux
+      - build_macos_windows
+      - build_mingw
+    steps:
+      - name: Download wheels
+        uses: actions/download-artifact@v2
+      - name: Move wheel files up to parent directory
+        run: |
+          find . -mindepth 2 -type f -exec mv -t . -i '{}' +
+          find . -type d -empty -delete
+      - name: Generate index.html
+        run: |
+          sudo apt-get update
+          sudo apt-get install curl git -y
+          curl https://raw.githubusercontent.com/jayanta525/apindex-v2/master/sudo-install.sh | bash
+          apindex .
+      - name: Deploy to GH Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
