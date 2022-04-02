@@ -952,7 +952,7 @@ class DeSmuME:
                 elif platform.system().lower().startswith('linux'):
                     dl_name = "libdesmume.so"
                 elif platform.system().lower().startswith('darwin'):
-                    dl_name = "libdesmume.so"
+                    dl_name = "libdesmume.dylib"
                 else:
                     RuntimeError(f"Unknown platform {platform.system()}, can't autodetect DLL to load.")
 
@@ -966,7 +966,7 @@ class DeSmuME:
                 elif platform.system().lower().startswith('linux'):
                     dl_name = os.path.join(dl_name, "libdesmume.so")
                 elif platform.system().lower().startswith('darwin'):
-                    dl_name = os.path.join(dl_name, "libdesmume.so")
+                    dl_name = os.path.join(dl_name, "libdesmume.dylib")
 
                 self.lib = cdll.LoadLibrary(dl_name)
         else:
