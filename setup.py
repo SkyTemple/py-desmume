@@ -78,7 +78,8 @@ class BuildExt(build_ext):
         # Clone the repository - TODO: Switch to stable tar/zip download at some point.
         if not os.path.exists(path_repo):
             print("Cloning the py_desmume repository.")
-            Repo.clone_from("https://github.com/TASEmulators/desmume.git", path_repo)
+            repo = Repo.clone_from("https://github.com/SkyTemple/desmume.git", path_repo)
+            repo.git.checkout('freeing-roms')
 
         # Run the build script depending on the platform
         if is_windows:

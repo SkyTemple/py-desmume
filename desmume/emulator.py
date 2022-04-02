@@ -857,6 +857,17 @@ class DeSmuME_Memory:
         """Write a 4-byte integer to the memory at the specified address."""
         self.write(addr, addr, 4, [value])
 
+    def get_next_instruction(self):
+        """Returns the next instruction to be executed by the ARM9 processor."""
+        self.emu.lib.desmume_memory_get_next_instruction()
+
+    def set_next_instruction(self, address: int):
+        """
+        Sets the next instruction to be executed by the ARM9 processor.
+        You should probably also consider updating the PC.
+        """
+        self.emu.lib.desmume_memory_set_next_instruction(address)
+
     def register_write(self, address: int, callback: Optional[MemoryCbFn], size=1):
         """
         Add a memory callback for when the memory at the specified address was changed.
@@ -1040,6 +1051,13 @@ class DeSmuME:
             raise RuntimeError("Unable to open ROM file.")
         if auto_resume:
             self.resume()
+
+    def close(self):
+        """
+        Close a previously opened ROM, freeing up memory.
+        You don't need to call this before opening a new ROM (it is done automatically).
+        """
+        self.lib.desmume_close()
 
     def set_savetype(self, value: int):
         """
