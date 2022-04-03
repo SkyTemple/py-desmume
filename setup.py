@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-__version__ = '0.0.4.post1'
+__version__ = '0.0.4.post2'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
@@ -68,18 +68,12 @@ class BuildExt(build_ext):
         # Don't build in develop mode
         if is_installed_develop:
             return
-        from git import Repo
 
         this_path = os.getcwd()
-        path_repo = os.path.join(this_path, '__build_desmume')
+        path_repo = os.path.join(this_path, 'desmume_src')
         path_interface = os.path.join(path_repo, 'desmume', 'src', 'frontend', 'interface')
 
         is_windows = platform.system() == "Windows"
-        # Clone the repository - TODO: Switch to stable tar/zip download at some point.
-        if not os.path.exists(path_repo):
-            print("Cloning the py_desmume repository.")
-            repo = Repo.clone_from("https://github.com/SkyTemple/desmume.git", path_repo)
-            repo.git.checkout('freeing-roms')
 
         # Run the build script depending on the platform
         if is_windows:
@@ -104,12 +98,18 @@ class BuildExt(build_ext):
     def build_unix(self, interface_path):
         """Tested against manylinux2014, see Jenkinsfile for requirements."""
         os.chdir(interface_path)
-        print(f"BUILDING LINUX - meson build")
-        retcode = subprocess.call(["meson", "build", "--buildtype=release"])
+        environ = os.environ.copy()
+
+        if platform.system() == "Darwin":
+            environ["CC"] = "clang"
+            environ["CXX"] = "clang++"
+
+        print(f"BUILDING UNIX - meson build")
+        retcode = subprocess.call(["meson", "build", "--buildtype=release"], env=environ)
         if retcode:
             return False
-        print(f"BUILDING LINUX - ninja")
-        retcode = subprocess.call(["ninja", "-C", "build"])
+        print(f"BUILDING UNIX - ninja")
+        retcode = subprocess.call(["ninja", "-C", "build"], env=environ)
         if retcode:
             return False
 
