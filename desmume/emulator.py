@@ -859,7 +859,7 @@ class DeSmuME_Memory:
 
     def get_next_instruction(self):
         """Returns the next instruction to be executed by the ARM9 processor."""
-        self.emu.lib.desmume_memory_get_next_instruction()
+        return self.emu.lib.desmume_memory_get_next_instruction()
 
     def set_next_instruction(self, address: int):
         """
