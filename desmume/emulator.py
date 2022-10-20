@@ -857,7 +857,7 @@ class DeSmuME_Memory:
         """Write a 4-byte integer to the memory at the specified address."""
         self.write(addr, addr, 4, [value])
 
-    def get_next_instruction(self):
+    def get_next_instruction(self) -> int:
         """Returns the next instruction to be executed by the ARM9 processor."""
         return self.emu.lib.desmume_memory_get_next_instruction()
 
