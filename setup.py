@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-__version__ = '0.0.5'
+__version__ = '0.0.5.post0'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
