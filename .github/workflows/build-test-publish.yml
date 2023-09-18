@@ -27,7 +27,7 @@ jobs:
           python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310 cp311-cp311'
           pre-build-command: 'source ./build-manylinux.sh'
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels-linux
           path: dist/*manylinux*.whl
@@ -81,7 +81,7 @@ jobs:
           BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
           FASTBUILD: "1"
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}-${{ matrix.arch }}
           path: dist/*.whl
@@ -135,7 +135,7 @@ jobs:
           BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
           FASTBUILD: "1"
       - name: Upload wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels-msys2-py-${{ matrix.msystem }}
           path: dist/*.whl
