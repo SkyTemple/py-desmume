@@ -1,2 +1,2 @@
 Pillow==10.0.1
-pygobject==3.36.0
+pygobject==3.46.0
