@@ -6,7 +6,7 @@ on: [push, pull_request]
 
 jobs:
   build_linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     name: Wheel Linux
     steps:
       # For tags we assume the version in setup.py is correct!
