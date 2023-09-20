@@ -68,7 +68,7 @@ jobs:
           brew install coreutils gcc sdl2 meson glib
       - name: Add msbuild to PATH
         if: matrix.os == 'windows-2019'
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.3.1
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip wheel
@@ -127,7 +127,7 @@ jobs:
         shell: msys2 {0}
         run: |
           python -m pip install --upgrade pip wheel
-      - name: Build Python wheels  # microsoft/setup-msbuild@v1.0.2 doesn't work here
+      - name: Build Python wheels  # microsoft/setup-msbuild@v1.3.1 doesn't work here
         shell: msys2 {0}
         run: |
           PATH="$PATH:/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin" python setup.py bdist_wheel
