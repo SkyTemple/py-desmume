@@ -14,12 +14,14 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: x86_64
-          - os: ubuntu-latest
-            arch: arm64
+          # broken:
+          #- os: ubuntu-latest
+          #  arch: aarch64
           - os: macos-11
             arch: x86_64
-          - os: macos-11
-            arch: arm64
+          # broken:
+          #- os: macos-11
+          #  arch: arm64
           - os: windows-2019
             arch: x86
           - os: windows-2019
@@ -53,11 +55,16 @@ jobs:
         if: matrix.os == 'macos-11'
         run: |
           brew install coreutils gcc sdl2 meson glib
-      - name: "MacOS: Set env"
-        if: matrix.os == 'macos-11'
+      - name: "Windows: Set env: AMD64"
+        if: matrix.os == 'windows-2019' && matrix.arch == 'AMD64'
+        shell: bash
         run: |
-          CC=gcc-10 >> $GITHUB_ENV
-          CXX=g++-10 >> $GITHUB_ENV
+          echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1" >> $GITHUB_ENV
+      - name: "Windows: Set env: x64"
+        if: matrix.os == 'windows-2019' && matrix.arch == 'x86'
+        shell: bash
+        run: |
+          echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: matrix.os == 'windows-2019'
         uses: microsoft/setup-msbuild@v1
@@ -69,6 +76,10 @@ jobs:
         env:
           CIBW_SKIP: "*musllinux*"
           CIBW_BEFORE_ALL_LINUX: "{package}/build-manylinux.sh"
+          CIBW_BEFORE_BUILD_WINDOWS: "rm -rf desmume_src/desmume/src/frontend/interface/windows/__bins"
+          CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=199309L" CFLAGS="-D_POSIX_C_SOURCE=199309L"'
+          CIBW_ENVIRONMENT_MACOS: "CC=gcc-10 CXX=g++-10"
+          CIBW_ENVIRONMENT_WINDOWS: "${{ env.CIBW_ENVIRONMENT_WINDOWS }}"
           CIBW_ARCHS: ${{ matrix.arch }}
       - name: Upload wheels
         uses: actions/upload-artifact@v3

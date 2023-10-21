@@ -25,4 +25,3 @@ EOF
 # Posix C-Source required for some time constants.
 export CXXFLAGS="-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=199309L"
 export CFLAGS="-D_POSIX_C_SOURCE=199309L"
-export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig"
