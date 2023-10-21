@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-__version__ = '0.0.5.post0'
+__version__ = '0.0.6'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
@@ -156,6 +156,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/x-rst',
     url='https://github.com/SkyTemple/py-desmume/',
+    python_requires=">=3.7",
     install_requires=[
         'Pillow >= 6.1.0'
     ],
@@ -163,12 +164,12 @@ setup(
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     distclass=BinaryDistribution,
     cmdclass={'build_ext': BuildExt, 'install': InstallPlatlib, 'develop': Develop}
