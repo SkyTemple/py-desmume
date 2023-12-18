@@ -82,7 +82,7 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: "${{ env.CIBW_ENVIRONMENT_WINDOWS }}"
           CIBW_ARCHS: ${{ matrix.arch }}
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/*.whl
@@ -136,7 +136,7 @@ jobs:
           BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
           FASTBUILD: "1"
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels-msys2-py-${{ matrix.msystem }}
           path: dist/*.whl
