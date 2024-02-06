@@ -67,7 +67,7 @@ jobs:
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: matrix.os == 'windows-2019'
-        uses: microsoft/setup-msbuild@v1
+        uses: microsoft/setup-msbuild@v2
       # end desume build deps
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
