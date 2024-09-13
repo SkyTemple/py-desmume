@@ -2,7 +2,11 @@
 # Deploys to PyPi on "release".
 name: Build, test and publish
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request: {}
 
 jobs:
   build:
@@ -14,14 +18,12 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: x86_64
-          # broken:
-          #- os: ubuntu-latest
-          #  arch: aarch64
-          - os: macos-11
+          - os: ubuntu-latest
+            arch: arm64
+          - os: macos-13
             arch: x86_64
-          # broken:
-          #- os: macos-11
-          #  arch: arm64
+          - os: macos-14
+            arch: arm64
           - os: windows-2019
             arch: x86
           - os: windows-2019
@@ -49,24 +51,24 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: 3.12
       # desmume build deps
       - name: Install MacOS build deps
-        if: matrix.os == 'macos-11'
+        if: runner.os == 'macOS'
         run: |
           brew install coreutils gcc sdl2 meson glib
       - name: "Windows: Set env: AMD64"
-        if: matrix.os == 'windows-2019' && matrix.arch == 'AMD64'
+        if: runner.os == 'Windows' && matrix.arch == 'AMD64'
         shell: bash
         run: |
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1" >> $GITHUB_ENV
       - name: "Windows: Set env: x64"
-        if: matrix.os == 'windows-2019' && matrix.arch == 'x86'
+        if: runner.os == 'Windows' && matrix.arch == 'x86'
         shell: bash
         run: |
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
       - name: Add msbuild to PATH
-        if: matrix.os == 'windows-2019'
+        if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
       # end desume build deps
       - name: Install cibuildwheel
@@ -86,6 +88,19 @@ jobs:
         with:
           name: wheels
           path: dist/*.whl
+  build-sdist:
+    name: Build SDist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Build SDist
+        run: pipx run build --sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist/*.tar.gz
   build_mingw:
     runs-on: windows-2019
     name: Msys Wheel
@@ -142,16 +157,18 @@ jobs:
           path: dist/*.whl
   deploy:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: build
+    needs:
+      - build
+      - build-sdist
     runs-on: ubuntu-latest
     name: Deploy wheels to PyPI
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v3
-      - name: Set up Python 3.11
+        uses: actions/download-artifact@v4
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       - name: Upgrade pip
         run: |
           python -m pip install --upgrade pip
@@ -161,4 +178,4 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload wheels/*.whl
+          twine upload wheels*/*.whl wheels*/*.tar.gz
