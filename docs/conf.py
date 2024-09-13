@@ -21,8 +21,8 @@
 import sys, os
 
 project = 'py-desmume'
-copyright = '2020, Marco "Parakoopa" Köpcke'
-author = 'Marco "Parakoopa" Köpcke'
+copyright = '2024, Marco "Capypara" Köpcke'
+author = 'Marco "Capypara" Köpcke'
 
 # The short X.Y version
 version = ''
@@ -79,9 +79,7 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-import sphinx_rtd_theme
-html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -136,7 +134,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'py-desmume.tex', 'py-desmume Documentation',
-     'Marco "Parakoopa" Köpcke', 'manual'),
+     'Marco "Capypara" Köpcke', 'manual'),
 ]
 
 
