@@ -19,8 +19,8 @@ jobs:
           - os: ubuntu-latest
             arch: x86_64
           - os: ubuntu-latest
-            arch: arm64
-          - os: macos-13
+            arch: aarch64
+          - os: macos-12
             arch: x86_64
           - os: macos-14
             arch: arm64
@@ -67,6 +67,14 @@ jobs:
         shell: bash
         run: |
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
+      - name: "MacOS 12: Set deployment target"
+        if: matrix.os == 'macos-12'
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=12.0" >> $GITHUB_ENV
+      - name: "MacOS 14: Set deployment target"
+        if: matrix.os == 'macos-14'
+        run: |
+          echo "MACOSX_DEPLOYMENT_TARGET=14.0" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
@@ -76,12 +84,16 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
         env:
+          CIBW_BUILD_FRONTEND: build
           CIBW_SKIP: "*musllinux*"
           CIBW_BEFORE_ALL_LINUX: "{package}/build-manylinux.sh"
           CIBW_BEFORE_BUILD_WINDOWS: "rm -rf desmume_src/desmume/src/frontend/interface/windows/__bins"
           CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=199309L" CFLAGS="-D_POSIX_C_SOURCE=199309L"'
-          CIBW_ENVIRONMENT_MACOS: "CC=gcc-10 CXX=g++-10"
           CIBW_ENVIRONMENT_WINDOWS: "${{ env.CIBW_ENVIRONMENT_WINDOWS }}"
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+          CIBW_MANYLINUX_PYPY_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+          CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
+          CIBW_MANYLINUX_PYPY_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
           CIBW_ARCHS: ${{ matrix.arch }}
       - name: Upload wheels
         uses: actions/upload-artifact@v3
