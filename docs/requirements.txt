@@ -1,2 +1,2 @@
--e ..
+-e .  # relatively from ..
 furo
