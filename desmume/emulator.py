@@ -3,7 +3,7 @@ This module contains the Python interface for DeSmuME.
 
 :class:`DeSmuME` is the main entrypoint to load and interact with the emulator.
 """
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #

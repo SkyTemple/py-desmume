@@ -2,7 +2,7 @@
 Software based rendering implementation (using Cairo). Can also be used directly,
 it has a hooking mechanism for drawing custom overlays.
 """
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #

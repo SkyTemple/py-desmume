@@ -3,7 +3,7 @@ It is 2020 and Glade still doesn't support passing anything but Glade-defined ob
 The GTK2 C++ Glade frontend had a custom Glade "parser" that worked around this, but we don't.
 So instead, enjoy this!
 """
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #

@@ -2,7 +2,7 @@
 Code for rendering the emulator on a Gtk DrawingArea. Feel free to use this in your own implementations!
 Uses the OpenGL screen texture if possible, otherwise renders via Software.
 """
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #

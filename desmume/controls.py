@@ -4,7 +4,7 @@ Some simple ports from sdlcntrl.cpp that are generally useful for dealing with c
 Some of this only applies if used with GTK (eg. the keyboard configuration), other things
 apply generally, such as the joystick configuration.
 """
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 # 
 #  This file is part of py-desmume.
 # 

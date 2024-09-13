@@ -1,4 +1,4 @@
-#  Copyright 2020-2021 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #
