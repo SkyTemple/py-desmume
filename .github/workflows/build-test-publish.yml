@@ -71,10 +71,12 @@ jobs:
         if: matrix.os == 'macos-12'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=12.0" >> $GITHUB_ENV
-      - name: "MacOS 14: Set deployment target"
+      - name: "MacOS 14: Set deployment target & fix arch flags"
         if: matrix.os == 'macos-14'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=14.0" >> $GITHUB_ENV
+          # This really shouldn't be needed though??
+          echo "CPPFLAGS=-arch arm64" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v2
