@@ -1,4 +1,4 @@
-#  Copyright 2020 Marco Köpcke (Parakoopa)
+#  Copyright 2020-2024 Marco Köpcke (Capypara)
 #
 #  This file is part of py-desmume.
 #
@@ -14,7 +14,7 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with py-desmume.  If not, see <https://www.gnu.org/licenses/>.
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 from setuptools import setup, find_packages
 
 from setuptools.command.build_ext import build_ext
@@ -100,10 +100,6 @@ class BuildExt(build_ext):
         os.chdir(interface_path)
         environ = os.environ.copy()
 
-        if platform.system() == "Darwin":
-            environ["CC"] = "clang"
-            environ["CXX"] = "clang++"
-
         print(f"BUILDING UNIX - meson build")
         retcode = subprocess.call(["meson", "build", "--buildtype=release"], env=environ)
         if retcode:
@@ -170,6 +166,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     distclass=BinaryDistribution,
     cmdclass={'build_ext': BuildExt, 'install': InstallPlatlib, 'develop': Develop}
