@@ -248,6 +248,76 @@ class DeSmuME_Savestate:
         return str(self.emu.lib.desmume_savestate_slot_date(slot_id), 'utf-8')
 
 
+class DeSmuME_Backup:
+    """
+    Import and export battery save files (backup memory).
+    Supports multiple formats: .sav (raw), .dsv (DeSmuME), .duc (Action Replay), .dss (DSOrganize).
+
+    Should not be instantiated manually!
+    """
+    def __init__(self, emu: 'DeSmuME'):
+        self.emu = emu
+
+    def import_file(self, file_path: str) -> bool:
+        """
+        Import battery save file (.sav, .dsv, .duc, etc.)
+
+        Imports backup memory from a file. Supports multiple formats with automatic detection.
+        The emulator will automatically reset after successful import.
+
+        :param file_path: Path to backup save file
+        :return: True if import succeeded, False otherwise
+        :raise: FileNotFoundError if the file doesn't exist
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Backup file not found: {file_path}")
+
+        self.emu.lib.desmume_backup_import_file.argtypes = [c_char_p]
+        self.emu.lib.desmume_backup_import_file.restype = c_int
+
+        result = self.emu.lib.desmume_backup_import_file(c_char_p(strbytes(file_path)))
+        return bool(result)
+
+    def import_raw(self, file_path: str, force_size: int = 0) -> bool:
+        """
+        Import raw battery save with forced size.
+
+        Similar to import_file() but allows forcing a specific backup device size.
+        Useful when auto-detection fails.
+
+        :param file_path: Path to raw .sav file
+        :param force_size: Size in bytes (0 = auto-detect)
+        :return: True if import succeeded, False otherwise
+        :raise: FileNotFoundError if the file doesn't exist
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Backup file not found: {file_path}")
+
+        self.emu.lib.desmume_backup_import_raw.argtypes = [c_char_p, c_uint]
+        self.emu.lib.desmume_backup_import_raw.restype = c_int
+
+        result = self.emu.lib.desmume_backup_import_raw(
+            c_char_p(strbytes(file_path)),
+            c_uint(force_size)
+        )
+        return bool(result)
+
+    def export_file(self, file_path: str) -> bool:
+        """
+        Export current battery save to file.
+
+        Saves the current backup memory to a .dsv file.
+
+        :param file_path: Destination path for .dsv file
+        :return: True if export succeeded, False otherwise
+        """
+        self.emu.lib.desmume_backup_export_file.argtypes = [c_char_p]
+        self.emu.lib.desmume_backup_export_file.restype = c_int
+
+        result = self.emu.lib.desmume_backup_export_file(c_char_p(strbytes(file_path)))
+        return bool(result)
+
+
 class DeSmuME_Date(Structure):
     """A date C struct, to be used with setting a date for movie recording."""
     _fields_ = [
@@ -983,6 +1053,7 @@ class DeSmuME:
 
         self._input = DeSmuME_Input(self)
         self._savestate = DeSmuME_Savestate(self)
+        self._backup = DeSmuME_Backup(self)
         self._movie = DeSmuME_Movie(self)
         self._memory = DeSmuME_Memory(self)
         self._sdl_window = None
@@ -1017,6 +1088,11 @@ class DeSmuME:
         :type: DeSmuME_Savestate
         """
         return self._savestate
+
+    @property
+    def backup(self) -> DeSmuME_Backup:
+        """Battery save (backup memory) import/export."""
+        return self._backup
 
     @property
     def movie(self):
