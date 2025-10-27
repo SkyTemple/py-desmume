@@ -258,32 +258,9 @@ class DeSmuME_Backup:
     def __init__(self, emu: 'DeSmuME'):
         self.emu = emu
 
-    def import_file(self, file_path: str) -> bool:
+    def import_file(self, file_path: str, force_size: int = 0) -> bool:
         """
-        Import battery save file (.sav, .dsv, .duc, etc.)
-
-        Imports backup memory from a file. Supports multiple formats with automatic detection.
-        The emulator will automatically reset after successful import.
-
-        :param file_path: Path to backup save file
-        :return: True if import succeeded, False otherwise
-        :raise: FileNotFoundError if the file doesn't exist
-        """
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Backup file not found: {file_path}")
-
-        self.emu.lib.desmume_backup_import_file.argtypes = [c_char_p]
-        self.emu.lib.desmume_backup_import_file.restype = c_int
-
-        result = self.emu.lib.desmume_backup_import_file(c_char_p(strbytes(file_path)))
-        return bool(result)
-
-    def import_raw(self, file_path: str, force_size: int = 0) -> bool:
-        """
-        Import raw battery save with forced size.
-
-        Similar to import_file() but allows forcing a specific backup device size.
-        Useful when auto-detection fails.
+        Import raw battery save.
 
         :param file_path: Path to raw .sav file
         :param force_size: Size in bytes (0 = auto-detect)
