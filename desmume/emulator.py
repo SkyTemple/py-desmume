@@ -270,10 +270,10 @@ class DeSmuME_Backup:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Backup file not found: {file_path}")
 
-        self.emu.lib.desmume_backup_import_raw.argtypes = [c_char_p, c_uint]
-        self.emu.lib.desmume_backup_import_raw.restype = c_int
+        self.emu.lib.desmume_backup_import_file.argtypes = [c_char_p, c_uint]
+        self.emu.lib.desmume_backup_import_file.restype = c_int
 
-        result = self.emu.lib.desmume_backup_import_raw(
+        result = self.emu.lib.desmume_backup_import_file(
             c_char_p(strbytes(file_path)),
             c_uint(force_size)
         )
