@@ -26,9 +26,9 @@ jobs:
             arch: x86_64
           - os: macos-14
             arch: arm64
-          - os: windows-2019
+          - os: windows-2022
             arch: x86
-          - os: windows-2019
+          - os: windows-2022
             arch: AMD64
     steps:
       - name: Checkout
@@ -118,7 +118,7 @@ jobs:
           name: wheels-sdist
           path: dist/*.tar.gz
   build_mingw:
-    runs-on: windows-2019
+    runs-on: windows-2022
     name: Msys Wheel
     strategy:
       fail-fast: false
