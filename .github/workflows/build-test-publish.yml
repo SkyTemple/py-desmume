@@ -92,7 +92,7 @@ jobs:
           CIBW_SKIP: "*musllinux*"
           CIBW_BEFORE_ALL_LINUX: "{package}/build-manylinux.sh"
           CIBW_BEFORE_BUILD_WINDOWS: "rm -rf desmume_src/desmume/src/frontend/interface/windows/__bins"
-          CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=200809L" CFLAGS="-D_POSIX_C_SOURCE=200809L"'
+          CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"'
           CIBW_ENVIRONMENT_WINDOWS: "${{ env.CIBW_ENVIRONMENT_WINDOWS }}"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
