@@ -139,7 +139,6 @@ jobs:
             mingw-w64-${{ matrix.arch }}-curl
             mingw-w64-${{ matrix.arch }}-python
             mingw-w64-${{ matrix.arch }}-python-pip
-            mingw-w64-${{ matrix.arch }}-python-pillow
             mingw-w64-${{ matrix.arch }}-openssl
             mingw-w64-${{ matrix.arch }}-toolchain
       - name: Checkout
