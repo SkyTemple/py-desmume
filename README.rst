@@ -35,3 +35,26 @@ for Linux, Windows and MacOS.
 
 Documentation can be found in the ``docs`` directory and at
 https://py-desmume.readthedocs.org.
+
+Build Requirements
+------------------
+
+**For using pre-built wheels (recommended):**
+
+Simply install via pip - all dependencies are included.
+
+**For building from source:**
+
+Linux:
+
+- SDL2 >= 2.0.14 (for full game controller support including touchpad features)
+- Other dependencies: zlib, libpcap, soundtouch, openal-soft, glib2, meson
+
+macOS:
+
+- Install via Homebrew: ``brew install sdl2 meson glib gcc``
+
+Windows:
+
+- Visual Studio 2019 or later
+- SDL2 is included in the repository

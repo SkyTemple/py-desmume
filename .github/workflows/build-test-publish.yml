@@ -22,13 +22,13 @@ jobs:
             arch: x86_64
           - os: ubuntu-latest
             arch: aarch64
-          - os: macos-12
+          - os: macos-13
             arch: x86_64
           - os: macos-14
             arch: arm64
-          - os: windows-2019
+          - os: windows-2022
             arch: x86
-          - os: windows-2019
+          - os: windows-2022
             arch: AMD64
     steps:
       - name: Checkout
@@ -69,10 +69,10 @@ jobs:
         shell: bash
         run: |
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
-      - name: "MacOS 12: Set deployment target"
-        if: matrix.os == 'macos-12'
+      - name: "MacOS 13: Set deployment target"
+        if: matrix.os == 'macos-13'
         run: |
-          echo "MACOSX_DEPLOYMENT_TARGET=12.0" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=13.0" >> $GITHUB_ENV
       - name: "MacOS 14: Set deployment target & fix arch flags"
         if: matrix.os == 'macos-14'
         run: |
@@ -92,7 +92,7 @@ jobs:
           CIBW_SKIP: "*musllinux*"
           CIBW_BEFORE_ALL_LINUX: "{package}/build-manylinux.sh"
           CIBW_BEFORE_BUILD_WINDOWS: "rm -rf desmume_src/desmume/src/frontend/interface/windows/__bins"
-          CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_POSIX_C_SOURCE=199309L" CFLAGS="-D_POSIX_C_SOURCE=199309L"'
+          CIBW_ENVIRONMENT_LINUX: 'CXXFLAGS="-DFORCE_AVX512_0=1 -D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"'
           CIBW_ENVIRONMENT_WINDOWS: "${{ env.CIBW_ENVIRONMENT_WINDOWS }}"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
           CIBW_MANYLINUX_PYPY_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
@@ -118,7 +118,7 @@ jobs:
           name: wheels-sdist
           path: dist/*.tar.gz
   build_mingw:
-    runs-on: windows-2019
+    runs-on: windows-2022
     name: Msys Wheel
     strategy:
       fail-fast: false
@@ -139,7 +139,6 @@ jobs:
             mingw-w64-${{ matrix.arch }}-curl
             mingw-w64-${{ matrix.arch }}-python
             mingw-w64-${{ matrix.arch }}-python-pip
-            mingw-w64-${{ matrix.arch }}-python-pillow
             mingw-w64-${{ matrix.arch }}-openssl
             mingw-w64-${{ matrix.arch }}-toolchain
       - name: Checkout
@@ -162,7 +161,7 @@ jobs:
       - name: Build Python wheels  # microsoft/setup-msbuild@v1.3.1 doesn't work here
         shell: msys2 {0}
         run: |
-          PATH="$PATH:/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin" python setup.py bdist_wheel
+          PATH="$PATH:/c/Program Files/Microsoft Visual Studio/2022/Enterprise/MSBuild/Current/Bin" python setup.py bdist_wheel
         env:
           BUILD_32: "${{ matrix.arch == 'x86' && '1' || '' }}"
           FASTBUILD: "1"
