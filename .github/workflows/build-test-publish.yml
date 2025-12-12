@@ -22,7 +22,7 @@ jobs:
             arch: x86_64
           - os: ubuntu-latest
             arch: aarch64
-          - os: macos-14
+          - os: macos-15-intel
             arch: x86_64
           - os: macos-14
             arch: arm64
@@ -69,15 +69,15 @@ jobs:
         shell: bash
         run: |
           echo CIBW_ENVIRONMENT_WINDOWS="FASTBUILD=1 BUILD_32=1" >> $GITHUB_ENV
-      - name: "MacOS 14 x64: Set deployment target & fix arch flags"
-        if: matrix.os == 'macos-14' && matrix.arch == 'x86_64'
+      - name: "MacOS 15 x64: Set deployment target"
+        if: matrix.os == 'macos-15-intel' && matrix.arch == 'x86_64'
         run: |
-          echo "MACOSX_DEPLOYMENT_TARGET=14.0" >> $GITHUB_ENV
-          echo "CPPFLAGS=-arch x86_64" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=15.0" >> $GITHUB_ENV
       - name: "MacOS 14 arm: Set deployment target & fix arch flags"
         if: matrix.os == 'macos-14' && matrix.arch == 'arm64'
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET=14.0" >> $GITHUB_ENV
+          # This really shouldn't be needed though??
           echo "CPPFLAGS=-arch arm64" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: runner.os == 'Windows'
